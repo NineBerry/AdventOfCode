@@ -12,7 +12,7 @@ using System.Diagnostics;
     string[] input = File.ReadAllLines(fileName);
 
     Console.WriteLine("Part 1: " + Part1(input));
-    Console.WriteLine("Part 2: " + Part2());
+    Console.WriteLine("Part 2: " + Part2(input));
     Console.ReadLine();
 }
 
@@ -21,9 +21,9 @@ long Part1(string[] lines)
     return lines.Count(SupportsTLS);
 }
 
-long Part2()
+long Part2(string[] lines)
 {
-    return 0;
+    return lines.Count(SupportsSSL);
 }
 
 bool SupportsTLS(string input)
@@ -63,9 +63,62 @@ bool SupportsTLS(string input)
     return abbaOutside && !abbaInside;
 }
 
+bool SupportsSSL(string input)
+{
+    bool inside = false;
+
+    HashSet<string> insideAbas = new();
+    HashSet<string> outsideAbas = new();
+
+    for (int i = 0; i <= input.Length - 3; i++)
+    {
+        if (input[i] == '[')
+        {
+            inside = true;
+        }
+        else if (input[i] == ']')
+        {
+            inside = false;
+        }
+        else
+        {
+            string abaCandidate = input.Substring(i, 3);
+
+            if (IsAba(abaCandidate))
+            {
+                if (inside)
+                {
+                    insideAbas.Add(abaCandidate);
+                }
+                else
+                {
+                    outsideAbas.Add(abaCandidate);
+                }
+            }
+        }
+    }
+
+    return outsideAbas.Any(aba => insideAbas.Contains(InverseAba(aba)));
+}
+
 bool IsAbba(string abbaCandidate)
 {
     Debug.Assert(abbaCandidate.Length == 4);
 
     return (abbaCandidate[0] != abbaCandidate[1]) && (abbaCandidate[0] == abbaCandidate[3]) && (abbaCandidate[1] == abbaCandidate[2]);
 }
+
+bool IsAba(string abaCandidate)
+{
+    Debug.Assert(abaCandidate.Length == 3);
+
+    return (abaCandidate[0] != abaCandidate[1]) && (abaCandidate[0] == abaCandidate[2]);
+}
+
+
+string InverseAba(string aba)
+{
+    return new string([aba[1], aba[0], aba[1]]);
+}
+
+

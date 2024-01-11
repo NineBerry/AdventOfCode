@@ -11,7 +11,7 @@
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2016\Day23\Full.txt";
     string resultRegister = "a";
     int initalValuePart1 = 7;
-    int initalValuePart2 = 2;
+    int initalValuePart2 = 12;
 #endif
 
     string[] input = File.ReadAllLines(fileName);
@@ -69,16 +69,15 @@ public record Computer
 
         while (InstructionPointer >= 0 && InstructionPointer < Program.Length)
         {
-            CheckPossibleOptimization();
+            // CheckPossibleOptimization();
             InstructionPointer += Program[InstructionPointer].Execute(this);
         }
     }
 
     private void CheckPossibleOptimization()
     {
-        // throw new NotImplementedException();
+        // TODO
     }
-
     internal void ToggleInstruction(int value)
     {
         int instructionIndex = InstructionPointer + value;
@@ -86,6 +85,12 @@ public record Computer
         {
             Program[instructionIndex] = Program[instructionIndex].GetToggledInstruction();
         }
+    }
+
+    public static bool IsRegister(string s)
+    {
+        return s is "a" or "b" or "c" or "d";
+        
     }
 }
 
@@ -133,14 +138,23 @@ public record CopyInstruction : Instruction
     }
 }
 
-public record IncrementInstruction : Instruction
+public abstract record IncrementOrDecrementInstruction: Instruction
 {
     public string Register = "";
+    public int Sign = 0;
 
     public override int Execute(Computer computer)
     {
-        computer.SetRegisterValue(Register, computer.GetRegisterValue(Register) + 1);
+        computer.SetRegisterValue(Register, computer.GetRegisterValue(Register) + Sign);
         return +1;
+    }
+}
+
+public record IncrementInstruction : IncrementOrDecrementInstruction
+{
+    public IncrementInstruction()
+    {
+        Sign = +1;
     }
 
     public override Instruction GetToggledInstruction()
@@ -149,15 +163,13 @@ public record IncrementInstruction : Instruction
     }
 }
 
-public record DecrementInstruction : Instruction
-{
-    public string Register = "";
-
-    public override int Execute(Computer computer)
+public record DecrementInstruction : IncrementOrDecrementInstruction
+{ 
+    public DecrementInstruction()
     {
-        computer.SetRegisterValue(Register, computer.GetRegisterValue(Register) - 1);
-        return +1;
+        Sign = -1;
     }
+
     public override Instruction GetToggledInstruction()
     {
         return new IncrementInstruction { Register = Register };

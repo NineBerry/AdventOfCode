@@ -7,8 +7,11 @@
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2017\Day11\Full.txt";
 #endif
 
-    string inputText = File.ReadAllText(fileName);
-    Direction[] directions = inputText.Split(',').Select(s => StringToDirection(s)).ToArray();
+    Direction[] directions = 
+        File.ReadAllText(fileName)
+        .Split(',')
+        .Select(StringToDirection)
+        .ToArray();
 
     var result = Walk(directions);
 

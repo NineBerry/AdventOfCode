@@ -1,0 +1,49 @@
+﻿// 126300 - 109300 = 17000
+
+			b = 109300
+			c = 126300
+while(true){
+			f = false
+			d = 2
+middleLoop	e = 2
+innerLoop   
+			
+			
+			if d * e == b then 
+			  f = true
+			e++
+			if e != b then goto innerLoop
+			d++
+			if d != b then goto middleLoop
+			if f == true then h++
+			if b == c then Exit
+			b += 17
+}
+
+--------------
+
+b = 109300
+c = 126300
+
+for(int b = 109300; b <= 126300; b+= 17)
+{ 
+	f = false;
+
+	for(int d=2; d < b; d++)
+	{
+		for(int e=2; e < b; e++)
+		{
+			if(d * e == b) then h = true
+		}
+	}
+
+	if(f) then h++;
+}
+
+b = 109300
+c = 126300
+
+for(int b = 109300; b <= 126300; b+= 17)
+{ 
+	if (b is not Prime ) then h++;
+}

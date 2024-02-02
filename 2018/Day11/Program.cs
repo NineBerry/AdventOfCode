@@ -111,7 +111,7 @@ public class Grid
         {
             if (x % 10 == 1)
             {
-                Console.Write("\r" + (x * 100) / 300 + "%");
+                Console.Write("\r" + (x * 100) / Width + "%");
             }
 
             for (int y = 1; y <= Height; y++)

@@ -1,7 +1,5 @@
 ﻿// #define Sample
 
-using System.Net.Http.Headers;
-
 {
 
 #if Sample

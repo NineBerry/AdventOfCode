@@ -1,5 +1,7 @@
 ﻿// #define Sample
 
+using System.Net.Http.Headers;
+
 {
 
 #if Sample
@@ -20,7 +22,8 @@
 
 long Solve(int[] start, int targetStep)
 {
-    Dictionary<int, int> spoken = [];
+    int[] spoken = new int[targetStep];
+
     int turn = 1;
     int next = 0;
 
@@ -38,7 +41,8 @@ long Solve(int[] start, int targetStep)
 
     int speak(int number, int turn)
     {
-        int nextNumber = spoken.TryGetValue(number, out int lastSpoken) ? turn - lastSpoken : 0;
+        int lastSpoken = spoken[number];
+        int nextNumber = lastSpoken > 0 ? turn - lastSpoken : 0;
         spoken[number] = turn;
         return nextNumber;
     }

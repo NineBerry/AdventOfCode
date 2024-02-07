@@ -1,7 +1,6 @@
-﻿#define Sample
+﻿// #define Sample
 
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 
 {
 
@@ -23,59 +22,38 @@ using System.Diagnostics.Contracts;
 
 long Part1(Parser parser, string[] messages)
 {
-    int count = 0;
-
-    foreach(var message in messages)
-    {
-        if(parser.MatchesWholeMessage(message))
-        {
-            Console.WriteLine("Match: " + message);
-            count++;
-        }
-    }
-
-    return count;
-}
+    return CountValidMessages(parser, messages);
+};
 
 long Part2(Parser parser, string[] messages)
 {
     parser.Rules[8] = new Rule(parser, "8: 42 | 42 8");
     parser.Rules[11] = new Rule(parser, "11: 42 31 | 42 11 31");
 
-    int count = 0;
-
-    foreach (var message in messages)
-    {
-        if (parser.MatchesWholeMessage(message))
-        {
-            Console.WriteLine("Match: " + message);
-            count++;
-        }
-    }
-
-    return count;
+    return CountValidMessages(parser, messages);
 }
 
-
+long CountValidMessages(Parser parser, string[] messages)
+{
+    return messages.Count(parser.MatchesWholeMessage);
+}
 
 public class Parser
 {
     public Parser(string[] ruleDefs)
     {
-        foreach(var ruleDef in ruleDefs)
-        {
-            Rule rule = new Rule(this, ruleDef);
-            Rules.Add(rule.ID, rule);
-        }
-    }
-    
-    public bool MatchesWholeMessage(string message)
-    {
-        (bool result, int index) = Rules[0].Eat(message, 0);
-        return result && index == message.Length;
+        Rules = ruleDefs
+            .Select(def => new Rule(this, def))
+            .ToDictionary(r => r.ID, r => r);
     }
 
-    public Dictionary<int, Rule> Rules = [];
+    public bool MatchesWholeMessage(string message)
+    {
+        int[] indexes = Rules[0].Eat(message, [0]);
+        return indexes.Any(i => i == message.Length);
+    }
+
+    public Dictionary<int, Rule> Rules;
 }
 
 public class Rule
@@ -99,56 +77,61 @@ public class Rule
         }
     }
 
-    public (bool Match, int Index) Eat(string message, int index)
+    public int[] Eat(string message, int[] indexes)
     {
-        if(ActualCharacter.HasValue)
+        if (indexes is []) return [];
+
+        if (ActualCharacter.HasValue)
         {
-            return Eat(message, index, ActualCharacter.Value);
+            return Eat(message, indexes, ActualCharacter.Value);
         }
-        else if(Subrules != null)
+        else if (Subrules != null)
         {
-            return Eat(message, index, Subrules);
+            return Eat(message, indexes, Subrules);
         }
         else throw new UnreachableException();
     }
-    private (bool Match, int Index) Eat(string message, int index, char actualCharacter)
+    private int[] Eat(string message, int[] indexes, char actualCharacter)
     {
-        if(index >= message.Length) return (false, index); 
+        if (indexes is []) return [];
 
-        if (message[index] == actualCharacter)
-        {
-            return (true, index + 1);
-        }
-        return (false, index);
+        return indexes
+            .Where(i => i < message.Length && message[i] == actualCharacter)
+            .Select(i => i + 1)
+            .ToArray();
     }
 
-    private (bool Match, int Index) Eat(string message, int originalIndex, int[][] alternativeRules)
+    private int[] Eat(string message, int[] originalIndexes, int[][] alternativeRules)
     {
+        if (originalIndexes is []) return [];
+
+        HashSet<int> indexes = [];
+
         foreach (var sequence in alternativeRules)
         {
-            (var result, var index) = Eat(message, originalIndex, sequence);
-            if (result)
-            {
-                return (result, index);
-            }
+            int[] alternativeIndexes = Eat(message, originalIndexes, sequence);
+            indexes.UnionWith(alternativeIndexes);
+
         }
-        return (false, originalIndex);
+        return indexes.ToArray();
     }
 
-    private (bool Match, int Index) Eat(string message, int originalIndex, int[] sequentialRules)
+    private int[] Eat(string message, int[] originalIndexes, int[] sequentialRules)
     {
-        bool result = false;
-        int index = originalIndex;
+        if (originalIndexes is []) return [];
+
+        int[] indexes = originalIndexes;
+
         foreach (var ruleID in sequentialRules)
         {
             Rule rule = Parser.Rules[ruleID];
-            (result, index) = rule.Eat(message, index);
-            if (!result)
+            indexes = rule.Eat(message, indexes);
+            if (indexes is [])
             {
                 break;
             }
         }
-        return (result, index);
+        return indexes;
     }
 
     public int ID;

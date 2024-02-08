@@ -39,41 +39,16 @@ long Part2(int[] labels)
     int percentRange = 10_000_000 / 100;
     int[] extendedLabels = [.. labels, ..Enumerable.Range(startAdd, countAdd)];
 
-    (int x, int y) cached = (0, 0);
-
-
     CrabCups game = new(extendedLabels);
 
     foreach (var moveNumber in Enumerable.Range(1, 10_000_000))
     {
-        if (moveNumber % percentRange == 0)
-        {
-            Console.Write("\r" + moveNumber / percentRange + "%");
-        }
-
-        if (moveNumber % 10000 == 0)
-        {
-            var resultValuesTemp = game.GetLabelsBetween1(2);
-            Console.WriteLine($"Move {moveNumber} => {resultValuesTemp[0]}-{resultValuesTemp[1]}  - {game.Current.Value}");
-        }
-
-        // var resultValuesTemp = game.GetLabelsBetween1(2);
-        // var currentResult = (resultValuesTemp[0], resultValuesTemp[1]);
-
-        /* if (currentResult != cached)
-        {
-            Console.WriteLine($"Move {moveNumber} => {cached} => {currentResult}");
-            cached = currentResult;
-        }
-        */
-
+        if (moveNumber % percentRange == 0) Console.Write("\r" + moveNumber / percentRange + "%");
         game.PlayMove();
     }
-
     Console.Write("\r");
 
     var resultValues = game.GetLabelsBetween1(2);
-
     return (long)resultValues[0] * (long)resultValues[1];
 }
 
@@ -82,6 +57,7 @@ public class CrabCups
 {
     int MaxValue;
     LinkedList<int> Cups;
+    LinkedListNode<int>[] NodesCache;
     public LinkedListNode<int> Current;
 
     public CrabCups(int[] values)
@@ -89,6 +65,14 @@ public class CrabCups
         Cups = new(values);
         MaxValue = values.Max();
         Current = Cups.First!;
+
+        var forArray = Cups.First!;
+        NodesCache = new LinkedListNode<int>[MaxValue + 1];
+        while(forArray != null)
+        {
+            NodesCache[forArray.Value] = forArray;
+            forArray = forArray.Next;
+        }
     }
 
     public void PlayMove()
@@ -105,33 +89,13 @@ public class CrabCups
         for (int i = seed - 1; i > 0; i--)
         {
             if (excluded.Contains(i)) continue;
-
-            var templeft = Current;
-            var tempright = Current;
-            
-            do
-            {
-                templeft = GetNextCounterClockWise(templeft);
-                tempright = GetNextClockWise(tempright);
-                if (tempright.Value == i) return tempright;
-                if (templeft.Value == i) return templeft;
-            } while (templeft.Value != seed);
+            return NodesCache[i];
         }
 
         for (int i = MaxValue; i > seed; i--)
         {
             if (excluded.Contains(i)) continue;
-
-            var templeft = Current;
-            var tempright = Current;
-
-            do
-            {
-                templeft = GetNextCounterClockWise(templeft);
-                tempright = GetNextClockWise(tempright);
-                if (tempright.Value == i) return tempright;
-                if (templeft.Value == i) return templeft;
-            } while (templeft.Value != seed);
+            return NodesCache[i];
         }
 
         throw new ApplicationException("No next current found");
@@ -139,19 +103,13 @@ public class CrabCups
 
     public List<int> GetLabelsBetween1(int count)
     {
-        var temp = Cups.First!;
+        var item = GetNextClockWise(NodesCache[1]);
         List<int> result = [];
-
-        while (temp.Value != 1) temp = GetNextClockWise(temp);
-
-        temp = GetNextClockWise(temp);
 
         foreach(var _ in Enumerable.Range(1, count))
         {
-            if (temp.Value == 1) break;
-
-            result.Add(temp.Value);
-            temp = GetNextClockWise(temp);
+            result.Add(item.Value);
+            item = GetNextClockWise(item);
         }
 
         return result;
@@ -177,6 +135,7 @@ public class CrabCups
         foreach (var i in toInsert)
         {
             item = Cups.AddAfter(item, i);
+            NodesCache[i] = item;
         }
 
     }

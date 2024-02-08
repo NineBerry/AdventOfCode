@@ -36,17 +36,14 @@ long Part2(int[] labels)
 {
     int startAdd = labels.Max() + 1;
     int countAdd = 1_000_000 - labels.Length;
-    int percentRange = 10_000_000 / 100;
     int[] extendedLabels = [.. labels, ..Enumerable.Range(startAdd, countAdd)];
 
     CrabCups game = new(extendedLabels);
 
-    foreach (var moveNumber in Enumerable.Range(1, 10_000_000))
+    foreach (var _ in Enumerable.Range(1, 10_000_000))
     {
-        if (moveNumber % percentRange == 0) Console.Write("\r" + moveNumber / percentRange + "%");
         game.PlayMove();
     }
-    Console.Write("\r");
 
     var resultValues = game.GetLabelsBetween1(2);
     return (long)resultValues[0] * (long)resultValues[1];
@@ -56,23 +53,24 @@ long Part2(int[] labels)
 public class CrabCups
 {
     int MaxValue;
-    LinkedList<int> Cups;
-    LinkedListNode<int>[] NodesCache;
-    public LinkedListNode<int> Current;
+    int[] ValueAfter;
+    public int Current;
 
     public CrabCups(int[] values)
     {
-        Cups = new(values);
         MaxValue = values.Max();
-        Current = Cups.First!;
+        Current = values.First();
 
-        var forArray = Cups.First!;
-        NodesCache = new LinkedListNode<int>[MaxValue + 1];
-        while(forArray != null)
+        ValueAfter = new int[MaxValue + 1];
+        int previous = 0;
+        foreach(var value in values) 
         {
-            NodesCache[forArray.Value] = forArray;
-            forArray = forArray.Next;
+            ValueAfter[previous] = value;
+            previous = value;
         }
+        
+        ValueAfter[values.Last()] = values.First();
+        ValueAfter[0] = 0;
     }
 
     public void PlayMove()
@@ -83,19 +81,19 @@ public class CrabCups
         Current = GetNextClockWise(Current);
     }
 
-    LinkedListNode<int> PickNextCurrent(List<int> excluded)
+    int PickNextCurrent(List<int> excluded)
     {
-        int seed = Current.Value;
+        int seed = Current;
         for (int i = seed - 1; i > 0; i--)
         {
             if (excluded.Contains(i)) continue;
-            return NodesCache[i];
+            return i;
         }
 
         for (int i = MaxValue; i > seed; i--)
         {
             if (excluded.Contains(i)) continue;
-            return NodesCache[i];
+            return i;
         }
 
         throw new ApplicationException("No next current found");
@@ -103,50 +101,52 @@ public class CrabCups
 
     public List<int> GetLabelsBetween1(int count)
     {
-        var item = GetNextClockWise(NodesCache[1]);
+        var item = GetNextClockWise(1);
         List<int> result = [];
 
         foreach(var _ in Enumerable.Range(1, count))
         {
-            result.Add(item.Value);
+            result.Add(item);
             item = GetNextClockWise(item);
         }
 
         return result;
     }
 
-    List<int> ExtractAfter(LinkedListNode<int> item, int count)
+    List<int> ExtractAfter(int item, int count)
     {
+        var originalItem = item;
         List<int> result = [];
 
         item = GetNextClockWise(item);
         foreach (var _ in Enumerable.Range(1, count))
         {
-            result.Add(item.Value);
-            var toDelete = item;
+            result.Add(item);
+            int previous = item;
             item = GetNextClockWise(item);
-            Cups.Remove(toDelete);
+            ValueAfter[previous] = -1;
         }
+
+        ValueAfter[originalItem] = item;
 
         return result;
     }
-    void InsertAfter(LinkedListNode<int> item, List<int> toInsert)
+    void InsertAfter(int item, List<int> toInsert)
     {
+        int originalNext = ValueAfter[item];
+        int previous = item;
+        
         foreach (var i in toInsert)
         {
-            item = Cups.AddAfter(item, i);
-            NodesCache[i] = item;
+            ValueAfter[previous] = i;
+            previous = i;
         }
 
+        ValueAfter[previous] = originalNext;
     }
 
-    LinkedListNode<int> GetNextClockWise(LinkedListNode<int> item)
+    int GetNextClockWise(int item)
     {
-        return item.Next ?? Cups.First!;
-    }
-
-    LinkedListNode<int> GetNextCounterClockWise(LinkedListNode<int> item)
-    {
-        return item.Previous ?? Cups.Last!;
+        return ValueAfter[item];
     }
 }

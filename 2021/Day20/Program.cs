@@ -10,7 +10,7 @@
     string[] input = File.ReadAllLines(fileName);
 
     Console.WriteLine("Part 1: " + Solve(input, 2));
-    Console.WriteLine("Part 1: " + Solve(input, 50));
+    Console.WriteLine("Part 2: " + Solve(input, 50));
     Console.ReadLine();
 }
 

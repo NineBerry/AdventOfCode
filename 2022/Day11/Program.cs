@@ -1,4 +1,4 @@
-﻿#define Sample
+﻿// #define Sample
 
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -19,7 +19,7 @@ using System.Text.RegularExpressions;
 
 long Part1(string input)
 {
-    MonkeyBusiness monkeyBusiness = new(input, reduceWorry: true);
+    MonkeyBusiness monkeyBusiness = new(input, evenMoreWorried: false);
 
     foreach(var _ in Enumerable.Range(0, 20))
     {
@@ -31,7 +31,7 @@ long Part1(string input)
 
 long Part2(string input)
 {
-    MonkeyBusiness monkeyBusiness = new(input, reduceWorry: false);
+    MonkeyBusiness monkeyBusiness = new(input, evenMoreWorried: true);
     
     foreach (var step in Enumerable.Range(0, 10_000))
     {
@@ -43,17 +43,31 @@ long Part2(string input)
 
 public class MonkeyBusiness
 {
-    public MonkeyBusiness(string input, bool reduceWorry)
+    public MonkeyBusiness(string input, bool evenMoreWorried)
     {
         Monkeys = 
             input
             .ReplaceLineEndings("\n")
             .Split("\n\n")
-            .Select(l => new Monkey(l, reduceWorry))
+            .Select(l => new Monkey(l))
             .ToDictionary(m => m.ID, m => m);
+
+        int worryReduceDivision = 3;
+        int worryReduceModulo = int.MaxValue;
+
+        if (evenMoreWorried)
+        {
+            worryReduceDivision = 1;
+            worryReduceModulo = Monkeys.Values.Select(m => m.TestDivisor).Aggregate((a, b) => a * b);
+        }
+
+        foreach(var monkey in Monkeys.Values) 
+        { 
+            monkey.WorryReduceDivision = worryReduceDivision;
+            monkey.WorryReduceModulo = worryReduceModulo;
+        };
     }
 
-    public bool ReduceWorry;
     public Dictionary<int, Monkey> Monkeys;
 
     public void RunRound()
@@ -78,7 +92,7 @@ public class MonkeyBusiness
 
 public class Monkey
 {
-    public Monkey(string inputText, bool reduceWorry)
+    public Monkey(string inputText)
     {
         string[] input = inputText.Split("\n").ToArray();
 
@@ -88,8 +102,6 @@ public class Monkey
         TestDivisor = GetIntegers(input[3]).Single();
         GiveToMonkeyIfTrue = GetIntegers(input[4]).Single();
         GiveToMonkeyIfFalse = GetIntegers(input[5]).Single();
-
-        ReduceWorry = reduceWorry;
     }
 
     private int[] GetIntegers(string line)
@@ -110,23 +122,12 @@ public class Monkey
     {
         ItemsInspected++;
 
-        if (ReduceWorry)
-        {
-            BigInteger modifiedItem = Operation.PerformOperation(item, item);
-            modifiedItem /= 3;
-            int nextMonkey = (modifiedItem % TestDivisor == 0) ? GiveToMonkeyIfTrue : GiveToMonkeyIfFalse;
-            monkeyBusiness.Monkeys[nextMonkey].Items.Add(modifiedItem);
-        }
-        else
-        {
-            // Not working. Idea: Instead of using a fixed number, use remainder classes for all
-            // used remainders. The perform the operation on each remainder class.
+        BigInteger modifiedItem = Operation.PerformOperation(item);
+        BigInteger reducedItem = (modifiedItem / WorryReduceDivision) % WorryReduceModulo;
+        
+        int nextMonkey = (reducedItem % TestDivisor == 0) ? GiveToMonkeyIfTrue : GiveToMonkeyIfFalse;
+        monkeyBusiness.Monkeys[nextMonkey].Items.Add(reducedItem);
 
-            BigInteger reducedItem = item % TestDivisor;
-            BigInteger modifiedItem = Operation.PerformOperation(reducedItem, item);
-            int nextMonkey = (modifiedItem % TestDivisor == 0) ? GiveToMonkeyIfTrue : GiveToMonkeyIfFalse;
-            monkeyBusiness.Monkeys[nextMonkey].Items.Add(modifiedItem);
-        }
     }
 
     public int ID;
@@ -136,7 +137,9 @@ public class Monkey
     public int GiveToMonkeyIfTrue;
     public int GiveToMonkeyIfFalse;
     public int ItemsInspected = 0;
-    public bool ReduceWorry;
+
+    public int WorryReduceDivision;
+    public int WorryReduceModulo;
 }
 
 
@@ -154,10 +157,10 @@ public class Operation
     public string OperandLeft;
     public string OperandRight;
 
-    public BigInteger PerformOperation(BigInteger leftOldValue, BigInteger rightOldValue)
+    public BigInteger PerformOperation(BigInteger oldValue)
     {
-        BigInteger left = GetValue(OperandLeft, leftOldValue);
-        BigInteger right = GetValue(OperandRight, rightOldValue);
+        BigInteger left = GetValue(OperandLeft, oldValue);
+        BigInteger right = GetValue(OperandRight, oldValue);
 
         return Operator switch
         {

@@ -33,7 +33,7 @@ long Part2(long[] program, string visualizationFileName)
     }
 
     Console.WriteLine("Lost! Still " + blocksLeft + " blocks left");
-    return 0;
+    return playerScore;
 }
 
 // 28512 too high
@@ -55,10 +55,24 @@ static long[] ReadProgram(string fileNamePart2)
     long x = 0;
     long y = 0;
     long playerScore = 0;
+    bool justTouched = false;   
 
+    Point paddlePoint = new Point();
 
-    computer.Input += (c) => 0;
-    
+    long paddleTarget = 20;
+    computer.Input += (c) =>
+    {
+        Console.Clear();
+        Console.WriteLine(ShowPainting(canvas, playerScore));
+        Thread.Sleep(100);
+
+        long paddlePosition = paddlePoint.X;
+
+        if(paddlePosition < paddleTarget) return 1;
+        if (paddlePosition > paddleTarget) return -1;
+        return 0;
+    };
+
     computer.Output += (c, value) =>
     {
         if (awaitingInput == 0)
@@ -75,12 +89,37 @@ static long[] ReadProgram(string fileNamePart2)
         {
             if (x == -1 && y == 0)
             {
-                playerScore = value;
+                if (value != 0)
+                {
+                    playerScore = value;
+                    Console.WriteLine("Score updated: " + value);
+                }
             }
             else
             {
+                if (justTouched)
+                {
+                    justTouched = false;
+
+                    if (paddleTarget == 30) paddleTarget = 24;
+                    if (paddleTarget == 36) paddleTarget = 30;
+                    if (paddleTarget == 34) paddleTarget = 36;
+                    if (paddleTarget == 27) paddleTarget = 34;
+                    if (paddleTarget == 20) paddleTarget = 27;
+                }
+
                 Point point = new Point(x, y);
                 canvas[point] = (Tile)value;
+
+                if(value == (long)Tile.Paddle)
+                {
+                    paddlePoint = point;
+                }
+
+                if(value == (long)Tile.Ball && y == paddlePoint.Y - 1 && (x == paddlePoint.X || x == paddlePoint.X - 1 || x == paddlePoint.X + 1))
+                {
+                    justTouched = true;
+                }
             }
             awaitingInput = 0;
         }
@@ -113,7 +152,7 @@ string ShowPainting(Dictionary<Point, Tile> canvas, long playerScore)
             char ch = tile switch
             {
                 Tile.Empty => ' ',
-                Tile.Paddle => '_',
+                Tile.Paddle => '─',
                 Tile.Wall => '█',
                 Tile.Block => '#',
                 Tile.Ball => 'O'

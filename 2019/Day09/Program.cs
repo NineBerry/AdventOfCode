@@ -9,7 +9,7 @@
 
     long[] program = ReadProgram(fileName);
     Console.WriteLine("Part 1: " + Solve(program, 1));
-    Console.WriteLine("Part 1: " + Solve(program, 2));
+    Console.WriteLine("Part 2: " + Solve(program, 2));
     Console.ReadLine();
 }
 

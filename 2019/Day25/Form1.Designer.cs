@@ -30,6 +30,7 @@
         {
             textBoxInput = new TextBox();
             textBoxOuput = new TextBox();
+            buttonAutomate = new Button();
             SuspendLayout();
             // 
             // textBoxInput
@@ -49,14 +50,26 @@
             textBoxOuput.Name = "textBoxOuput";
             textBoxOuput.ReadOnly = true;
             textBoxOuput.ScrollBars = ScrollBars.Vertical;
-            textBoxOuput.Size = new Size(836, 494);
+            textBoxOuput.Size = new Size(836, 447);
             textBoxOuput.TabIndex = 1;
+            // 
+            // buttonAutomate
+            // 
+            buttonAutomate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            buttonAutomate.Location = new Point(12, 523);
+            buttonAutomate.Name = "buttonAutomate";
+            buttonAutomate.Size = new Size(112, 23);
+            buttonAutomate.TabIndex = 2;
+            buttonAutomate.Text = "Automate";
+            buttonAutomate.UseVisualStyleBackColor = true;
+            buttonAutomate.Click += buttonAutomate_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(860, 558);
+            Controls.Add(buttonAutomate);
             Controls.Add(textBoxOuput);
             Controls.Add(textBoxInput);
             MaximizeBox = false;
@@ -72,5 +85,6 @@
 
         private TextBox textBoxInput;
         private TextBox textBoxOuput;
+        private Button buttonAutomate;
     }
 }

@@ -42,16 +42,7 @@ public class Grid
             "WALK",
             ];
 
-        (var reader, var writer) = RunProgram(Program);
-
-        foreach (var line in code)
-        {
-            SendLineToRobot(writer, line);
-        }
-
-        var text = ReadTextFromRobot(reader, out var suffix);
-        SaveStringToFile(text, VisualizationFileName);
-        return suffix;
+        return RunCode(code);
     }
 
     public long RunExtendedHullSurvey()
@@ -64,9 +55,18 @@ public class Grid
             "NOT C T",
             "OR T J",
             "AND D J",
+            "NOT J T",
+            "OR E T",
+            "OR H T",
+            "AND T J",
             "RUN",
             ];
 
+        return RunCode(code);
+    }
+
+    public long RunCode(string[] code)
+    {
         (var reader, var writer) = RunProgram(Program);
 
         foreach (var line in code)

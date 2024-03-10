@@ -63,8 +63,6 @@ public class Network
     {
         return GetCombinations();
 
-
-
         // TODO: Idea actual output and combination finding together.
         // Move the check whether the path is potentially higher than the furtest so far
         // from output calculcation to combination finding

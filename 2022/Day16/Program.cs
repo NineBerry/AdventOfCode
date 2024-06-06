@@ -1,4 +1,4 @@
-﻿// #define Sample
+﻿#define Sample
 using System.Text.RegularExpressions;
 
 {
@@ -42,7 +42,7 @@ public class Network
 {
     public Dictionary<string, Valve> Valves = [];
     public string[] RelevantValves = [];
-    public Dictionary<(string, string), int> Distances = [];
+    public Dictionary<(string, string), string[]> Distances = [];
 
     public Network(string[] lines)
     {
@@ -61,6 +61,8 @@ public class Network
 
     public int GetMaxFlow()
     {
+        // return 0;
+
         return GetCombinations();
 
         // TODO: Idea actual output and combination finding together.
@@ -87,10 +89,13 @@ public class Network
             maxOutput = Math.Max(maxOutput, GetOutput(comb));
         }
 
-        // List<Valve> comb = [Valves["AA"], Valves["DD"], Valves["BB"], Valves["JJ"], Valves["HH"], Valves["EE"], Valves["CC"]];
         // maxOutput = Math.Max(maxOutput, GetOutput(comb));
 
         return maxOutput;*/
+
+        // List<Valve> comb = [Valves["AA"], Valves["DD"], Valves["BB"], Valves["JJ"], Valves["HH"], Valves["EE"], Valves["CC"]];
+        // List<Valve> comb = [Valves["AA"], Valves["HH"], Valves["JJ"], Valves["DD"], Valves["BB"], Valves["EE"], Valves["CC"]];
+        // return GetOutput(comb);
     }
 
     private int max = 0;
@@ -98,13 +103,13 @@ public class Network
     private int GetOutput(List<Valve> combination)
     {
         int output = 0;
-        int minute = 1;
+        int minute = 0;
         int currentFlow = 0;
         
         Queue<Valve> remaining = new(combination.Skip(1));
         Valve current = combination.First();
         Valve next = remaining.Dequeue();
-        int minutesToNext = Distances[(current.Name, next.Name)];
+        int minutesToNext = Distances[(current.Name, next.Name)].Length;
 
         while (minute <= 30)
         {
@@ -112,9 +117,11 @@ public class Network
             output += currentFlow;
 
             int minutesRemaining = 30 - minute;
-            int maxPotential =  output + minutesRemaining * (currentFlow + remaining.Sum(r => r.FlowValue));
+            int nextFlowValue = next == null ? 0 : next.FlowValue;
+            int maxPotential =  output +  minutesRemaining * (nextFlowValue + currentFlow + remaining.Sum(r => r.FlowValue));
             if (maxPotential < max)
             {
+                Console.WriteLine("Early exit");
                 return 0;
             }
 
@@ -131,13 +138,13 @@ public class Network
                 
                 if(remaining.Count == 0)
                 {
-                    next = null;
+                    next = null!;
                     minutesToNext = int.MaxValue;
                 }
                 else
                 {
                     next = remaining.Dequeue();
-                    minutesToNext = Distances[(current.Name, next.Name)];
+                    minutesToNext = Distances[(current.Name, next.Name)].Length - 1;
                 }
             }
 
@@ -155,12 +162,14 @@ public class Network
 
     private int GetCombinations()
     {
+        max = 0;
+
         Valve start = Valves["AA"];
-        Valve[] remaining = RelevantValves.Where(s => s != "Aa").Select(v => Valves[v]).ToArray();
-        return GetCombinationsRecursive([start], remaining.ToHashSet());
+        Valve[] remaining = RelevantValves.Where(s => s != "AA").Select(v => Valves[v]).OrderByDescending(v => v.FlowValue).ToArray();
+        return GetCombinationsRecursive([start], remaining.ToList());
     }
 
-    private int GetCombinationsRecursive(List<Valve> soFar, HashSet<Valve> remaining)
+    private int GetCombinationsRecursive(List<Valve> soFar, List<Valve> remaining)
     {
         if(!remaining.Any()) return GetOutput(soFar);
 
@@ -168,33 +177,34 @@ public class Network
 
         foreach(var next in remaining.OrderByDescending(s => s.FlowValue).Take(5))
         {
-            result = Math.Max(result, GetCombinationsRecursive([..soFar, next], remaining.Except([next]).ToHashSet()));
+            result = Math.Max(result, GetCombinationsRecursive([..soFar, next], remaining.Except([next]).ToList()));
         }
 
         return result;
     }
 
-    private int GetDistance(string source, string target)
+    private string[] GetDistance(string source, string target)
     {
         HashSet<string> visited = new HashSet<string>();
-        PriorityQueue<string, int> todos = new PriorityQueue<string, int>();
+        PriorityQueue<string[], int> todos = new PriorityQueue<string[], int>();
 
-        todos.Enqueue(source, 0);
+        todos.Enqueue([source], 0);
 
-        while(todos.TryDequeue(out var current, out var currentDistance))
+        while(todos.TryDequeue(out var path, out var currentDistance))
         {
+            var current = path.Last();
             if (visited.Contains(current)) continue;
             visited.Add(current);
 
-            if(current == target) return currentDistance;
+            if(current == target) return path;
 
             Valve valve = Valves[current];
             foreach(var connected in valve.ConnectedValves)
             {
-                todos.Enqueue(connected,  currentDistance + 1);
+                todos.Enqueue([..path, connected],  currentDistance + 1);
             }
         }
         
-        return 0;
+        return [];
     }
 }

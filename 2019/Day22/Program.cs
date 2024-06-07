@@ -1,6 +1,5 @@
-﻿// #define Sample
+﻿#define Sample
 
-using System.Numerics;
 using System.Text.RegularExpressions;
 
 {
@@ -8,23 +7,27 @@ using System.Text.RegularExpressions;
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2019\Day22\Sample.txt";
     int deckSize = 10;
     int cardToFind = 5;
+    long deckSizePart2 = 10_007;
+    long positionToFindPart2 = 7614;
 #else
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2019\Day22\Full.txt";
     int deckSize = 10_007;
     int cardToFind = 2019;
+    long deckSizePart2 = 119315717514047;
+    long positionToFindPart2 = 2020;
 #endif
 
     string[] lines = File.ReadAllLines(fileName);
-    Deck deck = new Deck(deckSize);
 
-    Console.WriteLine("Part 1: " + Part1(deck, lines, cardToFind));
-    // Console.WriteLine("Part 2: " + Part2(ruleset));
+    Console.WriteLine("Part 1: " + Part1(deckSize, lines, cardToFind));
+    Console.WriteLine("Part 2: " + Part2(deckSizePart2, lines, positionToFindPart2));
     Console.ReadLine();
 }
 
-
-int Part1(Deck deck, string[] commands, int cardToFind)
+int Part1(int decksize, string[] commands, int cardToFind)
 {
+    Deck deck = new Deck(decksize);
+
     foreach (string cmd in commands)
     {
         deck.Shuffle(cmd);
@@ -33,9 +36,24 @@ int Part1(Deck deck, string[] commands, int cardToFind)
     return deck.GetCardPosition(cardToFind);
 }
 
+// Idea for Part 2:
+// Use a virtual deck only tracking the one position we want to read at the end,
+// applying the commands in reverse order 
+long Part2(long decksize, string[] commands, long positionToFind)
+{
+    VirtualDeck deck = new VirtualDeck(decksize);
+
+    foreach (string cmd in commands.Reverse())
+    {
+        positionToFind = deck.UnshufflePosition(cmd, positionToFind);
+    }
+
+    return positionToFind;
+}
+
 public class Deck
 {
-    private BigInteger[] deck;
+    private int[] deck;
 
     public Deck(int size)
     {
@@ -49,16 +67,16 @@ public class Deck
 
     public void Shuffle(string cmd)
     {
-        if(cmd.StartsWith("deal into"))
+        if (cmd.StartsWith("deal into"))
         {
             ShuffleReverse();
         }
-        else if(cmd.StartsWith("deal with"))
+        else if (cmd.StartsWith("deal with"))
         {
             int increment = int.Parse(Regex.Match(cmd, "\\d+").Value);
             ShuffleIncrement(increment);
         }
-        else if(cmd.StartsWith("cut"))
+        else if (cmd.StartsWith("cut"))
         {
             int cut = int.Parse(Regex.Match(cmd, "-?\\d+").Value);
             ShuffleCut(cut);
@@ -68,7 +86,6 @@ public class Deck
             throw new ArgumentException("Unknown command");
         }
     }
-
     private void ShuffleCut(int cut)
     {
         if (cut > 0) ShuffleCutTop(cut);
@@ -104,9 +121,67 @@ public class Deck
     {
         Array.Reverse(deck);
     }
+}
 
-    public override string ToString()
+
+public class VirtualDeck
+{
+    private long deckSize;
+
+    public VirtualDeck(long deckSize)
     {
-        return string.Join(",", deck);
+        this.deckSize = deckSize;
+    }
+
+    public long UnshufflePosition(string cmd, long position)
+    {
+        if (cmd.StartsWith("deal into"))
+        {
+            return UnshuffleReverse(position);
+        }
+        else if (cmd.StartsWith("deal with"))
+        {
+            int increment = int.Parse(Regex.Match(cmd, "\\d+").Value);
+            return UnshuffleIncrement(increment, position);
+        }
+        else if (cmd.StartsWith("cut"))
+        {
+            int cut = int.Parse(Regex.Match(cmd, "-?\\d+").Value);
+            return UnshuffleCut(cut, position);
+        }
+        else
+        {
+            throw new ArgumentException("Unknown command");
+        }
+    }
+
+    private long UnshuffleCut(int cut, long position)
+    {
+        if (cut > 0) return UnshuffleCutTop(cut, position);
+        if (cut < 0) return UnshuffleCutBottom(-1 * cut, position);
+        throw new ArgumentException();
+    }
+
+    private long UnshuffleCutBottom(int cut, long position)
+    {
+        return position; // TODO
+    }
+
+    private long UnshuffleCutTop(int cut, long position)
+    {
+        return position; // TODO
+    }
+
+    private long UnshuffleIncrement(int increment, long position)
+    {
+        // Start with 0, then subtract increment position times, always adding size if below 0
+
+        return position; // TODO
+    }
+
+    private long UnshuffleReverse(long position)
+    {
+        return position; // TODO
     }
 }
+

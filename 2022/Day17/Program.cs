@@ -9,41 +9,75 @@ using System.Text;
 #endif
 
     string outputNamePart1 = @"D:\Dropbox\Work\AdventOfCode\2022\Day17\VisualizationPart1.txt";
-    // string outputNamePart2 = @"D:\Dropbox\Work\AdventOfCode\2022\Day17\VisualizationPart2.txt";
 
     string flow = File.ReadAllText(fileName);
 
-    Console.WriteLine("Part 1: " + Solve(flow, 2022, outputNamePart1));
-    Console.WriteLine("Part 2: " + Solve(flow, 1_000_000_000_000, ""));
+    Console.WriteLine("Part 1: " + Part1(flow, 2022, outputNamePart1));
+    Console.WriteLine("Part 2: " + Part2(flow, 1_000_000_000_000));
     Console.ReadLine();
 }
 
-long Solve(string flow, long maxRocks, string outputName)
+long Part1(string flow, long maxRocks, string outputName)
 {
     Map map = new Map(flow);
-
-    // TODO: Add cycle detection for part 2
-    // Idea: Use a dictionary with key consisting of WindPosition, nextRockShape and several top lines of the tower
-    // and value being the count of fixed rocks
 
     while (map.FixedRocks < maxRocks)
     {
         map.PerformStep();
     }
 
-    if(outputName != "") map.SaveTo(outputName);
+    map.SaveTo(outputName);
+    return Math.Abs(map.MinY);
+}
+
+long Part2(string flow, long maxRocks)
+{
+    Map map = new Map(flow);
+
+    Dictionary<(int WindPosition, int NextRockShape, string TowerTop), (long FixedRocks, long Height)> cache = [];
+
+    // Cycle detection for part 2
+    // Idea: Use a dictionary with key consisting of WindPosition, nextRockShape and several top lines of the tower
+    // and value being the count of fixed rocks
+
+    while (map.FixedRocks < maxRocks)
+    {
+        map.PerformStep();
+
+        if (!map.MovingRock.Any())
+        {
+            string towerTop = map.GetTowerTop();
+            var currentKey = (map.WindPosition, map.NextRockShape, towerTop);
+
+            if (cache.TryGetValue(currentKey, out var found))
+            {
+                long cycleLength = map.FixedRocks - found.FixedRocks;
+                long cycleGrowth = Math.Abs(map.MinY) - found.Height;
+
+                long rest = cycleLength - ((maxRocks - map.FixedRocks)  % cycleLength);
+                long start = map.FixedRocks - rest;
+                long startHeight = cache.Single(c => c.Value.FixedRocks == start).Value.Height;
+                
+                long missingCycles = (maxRocks - start) / cycleLength;
+                long height = startHeight + cycleGrowth * missingCycles;
+                
+                return height;
+            }
+            cache[currentKey] = (map.FixedRocks, Math.Abs(map.MinY));
+        }
+    }
 
     return Math.Abs(map.MinY);
 }
 
 public class Map
 {
-    HashSet<Point> RestingRock = [];
-    HashSet<Point> MovingRock = [];
+    public HashSet<Point> RestingRock = [];
+    public HashSet<Point> MovingRock = [];
 
     private string Flow;
-    private int WindPosition = 0;
-    private int nextRockShape = 0;
+    public int WindPosition = 0;
+    public int NextRockShape = 0;
     
     public long MinY = 0;
     public long FixedRocks = 0;
@@ -78,9 +112,9 @@ public class Map
 
     private void SpawnRock()
     {
-        if (nextRockShape > 4) nextRockShape = 0;
+        if (NextRockShape > 4) NextRockShape = 0;
 
-        switch (nextRockShape)
+        switch (NextRockShape)
         {
             case 0:
                 MovingRock.Add(new Point(3, MinY - 4));
@@ -116,7 +150,7 @@ public class Map
                 break;
         }
 
-        nextRockShape++;
+        NextRockShape++;
     }
 
     private bool MoveRock(Direction direction)
@@ -151,6 +185,48 @@ public class Map
         RestingRock.UnionWith(MovingRock);
         MovingRock.Clear();
         FixedRocks++;
+    }
+
+    public string GetTowerTop()
+    {
+        List<string> lines = [];
+
+        int currentMinX = 0;
+        int currentMaxX = 8;
+
+        long minY = RestingRock.Union(MovingRock).Min(p => p.Y);
+
+
+        for (long row = minY; row < minY + 10 && row < 0; row++)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int col = currentMinX; col <= currentMaxX; col++)
+            {
+                Point p = new Point(col, row);
+
+                string toAppend = ".";
+
+                if (RestingRock.Contains(p))
+                {
+                    toAppend = "#";
+                }
+                else if (MovingRock.Contains(p))
+                {
+                    toAppend = "@";
+                }
+                else if (col == 0 || col == 8)
+                {
+                    toAppend = "|";
+                }
+
+
+                sb.Append(toAppend);
+            }
+            lines.Add(sb.ToString());
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 
     public void SaveTo(string fileName)
@@ -198,7 +274,7 @@ public class Map
     }
 }
 
-record struct Point(long X, long Y)
+public record struct Point(long X, long Y)
 {
     public Point GetNeightboringPoint(Direction direction)
     {
@@ -213,7 +289,7 @@ record struct Point(long X, long Y)
     }
 }
 
-enum Direction
+public enum Direction
 {
     South = 'v',
     West = '<',

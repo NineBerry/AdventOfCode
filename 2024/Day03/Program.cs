@@ -24,6 +24,10 @@ long Part1(string code)
     return ProcessCode(code, mulRegex);
 }
 
+// Alternative approach for Part 2 would be this regex
+// do\(\).*?(mul\((\d{1,3}),(\d{1,3})\).*?)*don't\(\)
+// With Option SingleLine enabled
+
 long Part2(string code)
 {
     string combinedRegex = mulRegex

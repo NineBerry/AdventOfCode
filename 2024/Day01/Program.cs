@@ -1,5 +1,7 @@
 ﻿// #define Sample
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day01\Sample.txt";
@@ -33,9 +35,9 @@ long Part1(int[] left, int[] right)
 
 long Part2(int[] left, int[] right)
 {
-    var leftHash = left.ToHashSet();
+    var leftCounts = left.CountBy(i => i).ToDictionary();
     
     return right
-        .Where(leftHash.Contains)
-        .Sum();
+        .Where(i => leftCounts.ContainsKey(i))
+        .Sum(i => i * leftCounts[i]);
 }

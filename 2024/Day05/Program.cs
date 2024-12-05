@@ -33,7 +33,7 @@ int Part1(OrderingRules orderingRules, SafetyManualUpdate[] safetyManualUpdates)
     return
         safetyManualUpdates
         .Where(m => m.FollowsRules(orderingRules))
-        .Sum(m => m.GetMiddlePageNumber());
+        .Sum(m => m.MiddlePageNumber);
 }
 
 int Part2(OrderingRules orderingRules, SafetyManualUpdate[] safetyManualUpdates)
@@ -42,7 +42,7 @@ int Part2(OrderingRules orderingRules, SafetyManualUpdate[] safetyManualUpdates)
         safetyManualUpdates
         .Where(m => !m.FollowsRules(orderingRules))
         .Select(m => m.CreateWithCorrectOrder(orderingRules))
-        .Sum(m => m.GetMiddlePageNumber());
+        .Sum(m => m.MiddlePageNumber);
 }
 
 public class OrderingRule
@@ -91,7 +91,7 @@ public class SafetyManualUpdate
 
     public SafetyManualUpdate(int[] input)
     {
-        pages = [..input];    
+        pages = [.. input];
         indexOfPages = pages
             .Select((page, index) => (page, index))
             .ToDictionary(pair => pair.page, pair => pair.index);
@@ -101,7 +101,7 @@ public class SafetyManualUpdate
     {
         return rules.Rules.All(FollowsRule);
     }
-    
+
     private bool FollowsRule(OrderingRule rule)
     {
         if (indexOfPages.TryGetValue(rule.Lower, out int lowerIndex)
@@ -118,10 +118,8 @@ public class SafetyManualUpdate
         int[] orderedPages = [.. pages.Order(orderingRules)];
         return new SafetyManualUpdate(orderedPages);
     }
-    public int GetMiddlePageNumber()
-    {
-        return pages[pages.Length / 2];
-    }
+
+    public int MiddlePageNumber => pages[pages.Length / 2];
 }
 
 public static class Tools

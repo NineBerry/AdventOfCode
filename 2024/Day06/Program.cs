@@ -15,7 +15,7 @@ using System.Diagnostics;
     var visitedPoints = visitedDirections.Select(v => v.Point).ToHashSet();
 
     Console.WriteLine("Part 1: " + visitedPoints.Count);
-    Console.WriteLine("Part 2: " + grid.CountPossibleBlocksToCreateLoop(visitedDirections, visitedPoints));
+    Console.WriteLine("Part 2: " + grid.CountPossibleBlocksToCreateLoop(visitedDirections));
     Console.ReadLine();
 }
 
@@ -91,9 +91,7 @@ class Grid
         return visited;
     }
 
-    public long CountPossibleBlocksToCreateLoop(
-        HashSet<(Point Point, Direction Direction)> visitedDirections,
-        HashSet<Point> visitedPoints)
+    public long CountPossibleBlocksToCreateLoop(HashSet<(Point Point, Direction Direction)> visitedDirections)
     {
         HashSet<Point> possibleBlocks = [];
 

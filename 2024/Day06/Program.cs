@@ -9,11 +9,10 @@
     var lines = File.ReadAllLines(fileName);
     Grid grid = new Grid(lines);
 
-    var visitedDirections = grid.DoWalk(grid.MapStartPoint, grid.MapStartDirection, []);
-    var visitedPoints = visitedDirections.Select(v => v.Point).ToHashSet();
+    var path = grid.DoWalk(grid.MapStartPoint, grid.MapStartDirection, []);
 
-    Console.WriteLine("Part 1: " + visitedPoints.Count);
-    Console.WriteLine("Part 2: " + grid.CountPossibleBlocksToCreateLoop(visitedDirections));
+    Console.WriteLine("Part 1: " + path.Distinct().Count());
+    Console.WriteLine("Part 2: " + grid.CountPossibleBlocksToCreateLoop(path));
     Console.ReadLine();
 }
 
@@ -61,10 +60,11 @@ class Grid
         }
     }
 
-    public HashSet<(Point Point, Direction Direction)> DoWalk(
+    public Point[] DoWalk(
         Point start, Direction startDirection, HashSet<Point> additionalWall)
     {
         HashSet<(Point,Direction)> visited = [];
+        List<Point> path = [];
 
         Point currentPoint = start;
         Direction currentDirection = startDirection;
@@ -74,7 +74,7 @@ class Grid
             // Cycle detected
             if (visited.Contains((currentPoint, currentDirection))) return [];
             visited.Add((currentPoint, currentDirection));
-            
+
             Point nextPoint = currentPoint.GetNeightboringPoint(currentDirection);
 
             if (Wall.Contains(nextPoint) || additionalWall.Contains(nextPoint))
@@ -83,37 +83,37 @@ class Grid
             }
             else
             {
+                path.Add(currentPoint);
                 currentPoint = nextPoint;
             }
         }
 
-        return visited;
+        return [..path];
     }
 
-    public long CountPossibleBlocksToCreateLoop(HashSet<(Point Point, Direction Direction)> visitedDirections)
+    public long CountPossibleBlocksToCreateLoop(Point[] path)
     {
         HashSet<Point> possibleBlocks = [];
+        HashSet<Point> pathSoFar = [];
 
-        foreach (var visited in visitedDirections)
+        foreach (var point in path)
         {
-            var nextPoint = visited.Point.GetNeightboringPoint(visited.Direction);
+            if (pathSoFar.Contains(point)) continue;
+            if (possibleBlocks.Contains(point)) continue;
+            if (point == MapStartPoint) continue;
 
-            if (nextPoint == MapStartPoint) continue;
-            if (Wall.Contains(nextPoint)) continue;
-            if (possibleBlocks.Contains(nextPoint)) continue;
-            if (!IsInGrid(nextPoint)) continue;
+            // New idea for improving performance:
+            // Returned path contains direction
+            // Build up visited directions so far here and pass
+            // them to DoWalk to init visited there and start
+            // dowalk with previous path position
 
-            // Possible performance improvement:
-            // Use List instead of Hashset to remember path taken
-            // Then here check whether nextPoint is already in the path taken so far
-            // Then we can ignore it. Because we wouldn't have reached this point
-            // if there had been a blocker in the path segment before.
-            // Time machine paradox: If we travel back and change the past path... :)
-
-            if (CheckBlockCreatesCycle(nextPoint, MapStartPoint, MapStartDirection))
+            if (CheckBlockCreatesCycle(point, MapStartPoint, MapStartDirection))
             {
-                possibleBlocks.Add(nextPoint);
+                possibleBlocks.Add(point);
             }
+
+            pathSoFar.Add(point);
         }
 
         return possibleBlocks.Count;

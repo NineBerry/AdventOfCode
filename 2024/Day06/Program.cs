@@ -1,7 +1,5 @@
 ﻿// #define Sample
 
-using System.Diagnostics;
-
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day06\Sample.txt";
@@ -11,7 +9,7 @@ using System.Diagnostics;
     var lines = File.ReadAllLines(fileName);
     Grid grid = new Grid(lines);
 
-    var visitedDirections = grid.DoWalk(grid.MapStartPoint, grid.MapStartDirection);
+    var visitedDirections = grid.DoWalk(grid.MapStartPoint, grid.MapStartDirection, []);
     var visitedPoints = visitedDirections.Select(v => v.Point).ToHashSet();
 
     Console.WriteLine("Part 1: " + visitedPoints.Count);
@@ -63,7 +61,8 @@ class Grid
         }
     }
 
-    public HashSet<(Point Point, Direction Direction)> DoWalk(Point start, Direction startDirection)
+    public HashSet<(Point Point, Direction Direction)> DoWalk(
+        Point start, Direction startDirection, HashSet<Point> additionalWall)
     {
         HashSet<(Point,Direction)> visited = [];
 
@@ -78,7 +77,7 @@ class Grid
             
             Point nextPoint = currentPoint.GetNeightboringPoint(currentDirection);
 
-            if (Wall.Contains(nextPoint))
+            if (Wall.Contains(nextPoint) || additionalWall.Contains(nextPoint))
             {
                 currentDirection = currentDirection.TurnRight();
             }
@@ -122,16 +121,7 @@ class Grid
 
     private bool CheckBlockCreatesCycle(Point block, Point currentPoint, Direction currentDirection)
     {
-        Debug.Assert(!Wall.Contains(block));
-        Wall.Add(block);
-        try
-        {
-            return !DoWalk(currentPoint, currentDirection).Any();
-        }
-        finally
-        {
-            Wall.Remove(block);
-        }
+        return !DoWalk(currentPoint, currentDirection, [block]).Any();
     }
 
     private bool IsInGrid(Point point)

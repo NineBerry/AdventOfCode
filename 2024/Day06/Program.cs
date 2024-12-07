@@ -133,6 +133,7 @@ class Grid
             && point.Y < Height;
     }
 }
+
 enum Direction
 {
     None,

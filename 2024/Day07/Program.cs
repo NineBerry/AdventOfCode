@@ -49,12 +49,16 @@ bool HasValidCombinations(long[] values, bool allowConcat)
             else continue;
         }
 
-        todo.Enqueue(index + 1, valueSoFar + values[index + 1]);
-        todo.Enqueue(index + 1, valueSoFar * values[index + 1]);
+        CheckedEnqueue(valueSoFar + values[index + 1]);
+        CheckedEnqueue(valueSoFar * values[index + 1]);
+        if (allowConcat) CheckedEnqueue(Tools.Concat(valueSoFar, values[index + 1]));
 
-        if (allowConcat)
+        void CheckedEnqueue(long value)
         {
-            todo.Enqueue(index + 1, Tools.Concat(valueSoFar, values[index + 1]));
+            if (value <= expectedResult)
+            {
+                todo.Enqueue(index + 1, value);
+            }
         }
     }
 

@@ -17,217 +17,159 @@
 long Part1(string input)
 {
     FileSystem fileSystem = new(input);
-    fileSystem.DefragmentBlocks();
+    fileSystem.MoveBlocks();
     return fileSystem.CalculateChecksum();
 }
 
 long Part2(string input)
 {
     FileSystem fileSystem = new(input);
-    fileSystem.DefragmentFiles();
+    fileSystem.MoveFiles();
     return fileSystem.CalculateChecksum();
 }
 
-
 class FileSystem
 {
-    private LinkedList<BlockRange> blocks = new();
+    private LinkedList<BlockRange> blocks = [];
 
     public FileSystem(string input)
     {
-        bool IsFreeBlock = false;
-        long fileId = 0;
-        for (int position = 0; position < input.Length; position++)
+        int fileId = 0;
+        int position = 0;
+        
+        foreach((int index, char ch) in input.Index())
         {
-            char ch = input[position];
-            long length = long.Parse(""+ch); ;
+            int length = int.Parse("" + ch);
+            int? nextFileId = int.IsOddInteger(index) ? null : fileId++;
 
-            if (IsFreeBlock)
-            {
-                blocks.AddLast(new BlockRange(length, null, position));
-            }
-            else
-            {
-                blocks.AddLast(new BlockRange(length, fileId, position));
-                fileId++;
-            }
+            blocks.AddLast(new BlockRange(length, nextFileId, position));
 
-            IsFreeBlock = !IsFreeBlock;
+            position += length;
         }
     }
 
-    public void DefragmentBlocks()
+    private void MoveLeft(LinkedListNode<BlockRange> left, LinkedListNode<BlockRange> right, int toCopyLength)
+    {
+        // Add moved blocks at left side and adapt gap
+        blocks.AddBefore(left, new BlockRange(toCopyLength, right.Value.FileId, left.Value.Position));
+        left.Value.Length = left.Value.Length - toCopyLength;
+        left.Value.Position += toCopyLength;
+
+        // Add gap at right side and adapt file length
+        blocks.AddBefore(right, new BlockRange(toCopyLength, null, right.Value.Position + (right.Value.Length - toCopyLength)));
+        right.Value.Length = right.Value.Length - toCopyLength;
+    }
+
+    public void MoveBlocks()
     {
         var left = blocks.First!;
         var right = blocks.Last!;
 
-        // Until left and right meet
-        while (left != right)
+        // While left is left of right
+        while (left.Value.Position < right.Value.Position)
         {
-            // On left side skip files
-            if (!left.Value.IsEmpty)
+            // On left side skip non-gaps
+            if (!IsValidGap(left.Value))
             {
                 left = left.Next!;
                 continue;
             }
 
-            // On right side skip gaps
-            if (right.Value.IsEmpty)
+            // On right side skip non-files
+            if (!IsValidFile(right.Value))
             {
                 right= right.Previous!;
                 continue;
             }
 
             // We have a gap left and a file right
-            // Decide how many blocks to move from right to left
-            long toCopyLength = Math.Min(left.Value.Length, right.Value.Length);
-
-            // Add moved blocks at left side and adapt gap
-            var newLeft = blocks.AddBefore(left, new BlockRange(toCopyLength, right.Value.FileId, 0));
-            long emptyRest = left.Value.Length - toCopyLength;
-
-            if(emptyRest == 0)
-            {
-                blocks.Remove(left);
-                left = newLeft;
-            }
-            else
-            {
-                left.Value.Length = emptyRest;
-            }
-
-            // Add gap at right side and adapt file length
-            var newRight = blocks.AddBefore(right, new BlockRange(toCopyLength, null, 0));
-            long fileRest = right.Value.Length - toCopyLength;
-
-            if (fileRest == 0)
-            {
-                blocks.Remove(right);
-                right = newRight;
-            }
-            else
-            {
-                right.Value.Length = fileRest;
-            }
+            int toCopyLength = Math.Min(left.Value.Length, right.Value.Length);
+            MoveLeft(left, right, toCopyLength);
         }
     }
 
-    public void DefragmentFiles()
+    public void MoveFiles()
     {
         // Get list of files in order descending by file id
         var filesToMove = GetFilesByIdDescending();
 
-        var left = blocks.First;
-
         // Move all the way from left to right handling all gaps
-        while(left != null)
+        var left = blocks.First;
+        while (left != null)
         {
-            // Optimization: We can break when we have reached the last file
+            // Optimization: We can break when we have reached the
+            // most right remaining file.
             // The gaps after that will not be filled
             if (left == filesToMove.FirstOrDefault()) break;
 
-            // Skip over files
-            if (!left.Value.IsEmpty)
+            // Skip over non-gaps
+            if (!IsValidGap(left.Value))
             {
                 left = left.Next;
                 continue;
             }
 
-            // Find the first file with the  highest id that
+            // Find the first file with the highest id that
             // fits inside the current gap and is right of that gap
-            var toMove = filesToMove.FirstOrDefault(b => 
-                (b.Value.Length <= left.Value.Length) 
-                && b.Value.Position > left.Value.Position);
+            var toMove = filesToMove.FirstOrDefault(b =>
+                (b.Value.Length <= left.Value.Length)
+                && (b.Value.Position > left.Value.Position));
 
             if (toMove != null)
             {
-                // Left side: Add file in gap and adapt gap
-                var addedFile = blocks.AddBefore(left, toMove.Value);
-                long emptyRest = left.Value.Length - toMove.Value.Length;
-
-                if (emptyRest == 0)
-                {
-                    blocks.Remove(left);
-                    left = addedFile;
-                }
-                else
-                {
-                    left.Value.Length = emptyRest;
-                }
-                
-                // Right side: Replace file with gap
-                blocks.AddAfter(toMove, new BlockRange(toMove.Value.Length, null, toMove.Value.Position));
-                blocks.Remove(toMove);
-
                 filesToMove.Remove(toMove);
+                MoveLeft(left, toMove, toMove.Value.Length);
             }
             else
             {
                 // No file fits the gap.
                 left = left.Next;
             }
-
         }
     }
 
     private List<LinkedListNode<BlockRange>> GetFilesByIdDescending()
     {
-        List<LinkedListNode<BlockRange>> filesToMove = [];
+        List<LinkedListNode<BlockRange>> files = [];
 
-        var current = blocks.Last;
-        while (current != null)
-        {
-            if (!current.Value.IsEmpty)
+        for(var current = blocks.Last; current != null; current = current.Previous)
+        { 
+            if (IsValidFile(current.Value))
             {
-                filesToMove.Add(current);
+                files.Add(current);
             }
-
-            current = current.Previous;
         }
 
-        return filesToMove;
+        return files;
     }
 
-    public long CalculateChecksum()
-    {
-        long sum = 0;
-        long position = 0;
+    private static bool IsValidGap(BlockRange blockRange) 
+        => blockRange.Length > 0 && !blockRange.FileId.HasValue;
+    private static bool IsValidFile(BlockRange blockRange) 
+        => blockRange.Length > 0 && blockRange.FileId.HasValue;
 
-        foreach (var block in blocks)
-        {
-            sum += block.GetChecksum(position);
-            position += block.Length;
-        }        
-
-        return sum;
-    }
+    public long CalculateChecksum() => blocks.Sum(b => b.GetChecksum());
 }
 
 class BlockRange
 {
-    public long? FileId = null;
-    public long Length;
-    public long Position;
+    public int? FileId = null;
+    public int Length;
+    public int Position;
 
-    public BlockRange(long length, long? fileID, long originalPosition)
+    public BlockRange(int length, int? fileID, int position)
     {
         Length = length;
         FileId = fileID;
-        Position = originalPosition;
+        Position = position;
     }
 
-    public bool IsEmpty { get => !FileId.HasValue; }
-
-    public long GetChecksum(long startPosition)
+    public long GetChecksum()
     {
-        if(IsEmpty) return 0;
+        if(!FileId.HasValue) return 0;
 
-        long sum = 0;
-        for (long i = 0; i < Length; i++)
-        {
-            sum += (startPosition + i) * FileId!.Value;
-        }
-
-        return sum;
+        return Enumerable
+            .Range(0, Length)
+            .Sum(i => (Position + (long)i) * FileId.Value);
     }
 }

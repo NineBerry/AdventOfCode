@@ -96,7 +96,7 @@ class FileSystem
                 left.Value.Length = emptyRest;
             }
 
-            // Add gap at right side and afapt file length
+            // Add gap at right side and adapt file length
             var newRight = blocks.AddBefore(right, new BlockRange(toCopyLength, null, 0));
             long fileRest = right.Value.Length - toCopyLength;
 

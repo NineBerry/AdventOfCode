@@ -10,6 +10,7 @@
     string input = File.ReadAllText(fileName);
 
     Console.WriteLine("Part 1: " + Part1(input));
+    Console.WriteLine("Part 1: " + Part1Simple(input) + " (simple)");
     Console.WriteLine("Part 2: " + Part2(input));
     Console.ReadLine();
 }
@@ -19,6 +20,49 @@ long Part1(string input)
     FileSystem fileSystem = new(input);
     fileSystem.MoveBlocks();
     return fileSystem.CalculateChecksum();
+}
+
+// Very simple approach for Part 1
+long Part1Simple(string input)
+{
+    // Parse input and build full disk
+    long fileId = 0;
+    List<long> fileSystem = new List<long>();
+
+    foreach ((int index, char ch) in input.Index())
+    {
+        int length = int.Parse("" + ch);
+        long id = int.IsOddInteger(index) ? -1 : fileId++;
+        fileSystem.AddRange(Enumerable.Repeat(id, length));
+    }
+
+    // Defragmentation
+    int left = 0;
+    int right = fileSystem.Count - 1;
+    while(left < right)
+    {
+        if(fileSystem[left] != -1)
+        {
+            left++;
+            continue;
+        }
+
+        if (fileSystem[right] == -1)
+        {
+            right--;
+            continue;
+        }
+
+        fileSystem[left] = fileSystem[right];
+        fileSystem[right] = -1;
+    }
+
+    // Calculate output
+    long sum = 
+        fileSystem.Index()
+        .Select((pair) => (pair.Item == -1) ? 0 : (pair.Index * pair.Item))
+        .Sum();
+    return sum;
 }
 
 long Part2(string input)

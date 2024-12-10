@@ -107,9 +107,8 @@ record Point(int X, int Y)
         {
             Direction.West => this with { X = this.X - 1 },
             Direction.East => this with { X = this.X + 1 },
-
-            Direction.South => this with { X = this.X, Y = this.Y + 1 },
-            Direction.North => this with { X = this.X, Y = this.Y - 1 },
+            Direction.South => this with { Y = this.Y + 1 },
+            Direction.North => this with { Y = this.Y - 1 },
             _ => throw new ArgumentException("Unknown direction", nameof(direction)),
         };
     }

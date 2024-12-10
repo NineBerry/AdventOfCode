@@ -105,10 +105,10 @@ record Point(int X, int Y)
     {
         return direction switch
         {
-            Direction.West => this with { X = this.X - 1 },
-            Direction.East => this with { X = this.X + 1 },
-            Direction.South => this with { Y = this.Y + 1 },
-            Direction.North => this with { Y = this.Y - 1 },
+            Direction.West => this with { X = X - 1},
+            Direction.East => this with { X = X + 1 },
+            Direction.South => this with { Y = Y + 1 },
+            Direction.North => this with { Y = Y - 1 },
             _ => throw new ArgumentException("Unknown direction", nameof(direction)),
         };
     }

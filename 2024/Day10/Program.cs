@@ -115,7 +115,7 @@ record Point(int X, int Y)
 
     public Point[] GetAllNeighboringPoints()
     {
-        return AllDirections.Select(d => GetNeightboringPoint(d)).ToArray();
+        return AllDirections.Select(GetNeightboringPoint).ToArray();
     }
 
     public static Direction[] AllDirections = [Direction.West, Direction.East, Direction.North, Direction.South];

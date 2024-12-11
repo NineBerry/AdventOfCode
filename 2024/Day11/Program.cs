@@ -1,5 +1,7 @@
 ﻿// #define Sample
 
+using System.Reflection.PortableExecutable;
+
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day11\Sample.txt";
@@ -7,23 +9,26 @@
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day11\Full.txt";
 #endif
 
-    long[] input = File.ReadAllText(fileName).Split(' ').Select(long.Parse).ToArray();
-
-    Console.WriteLine("Part 1: " + Solve(input, 25));
-    Console.WriteLine("Part 2: " + Solve(input, 75));
-    Console.ReadLine();
-}
-
-long Solve(long[] input, int blink)
-{
+    long[] input = 
+        File
+        .ReadAllText(fileName)
+        .Split(' ')
+        .Select(long.Parse)
+        .ToArray();
+    
     StoneLineMagic magic = new StoneLineMagic();
-    return input.Sum(l => magic.Blink(l, blink));
+
+    Console.WriteLine("Part 1: " + magic.Blink(input, 25));
+    Console.WriteLine("Part 2: " + magic.Blink(input, 75));
+    Console.ReadLine();
 }
 
 class StoneLineMagic
 {
-    // Maps remaining blinks and value on count of values expected
+    // Cache: Maps remaining blinks and value on count of values expected
     private Dictionary<(int Blinks, long Value), long> Cache = [];
+
+    public long Blink(long[] input, int blink) => input.Sum(l => Blink(l, blink));
 
     public long Blink(long value, int blink)
     {

@@ -27,12 +27,12 @@ class StoneLineMagic
 
     public long Blink(long value, int blink)
     {
+        if (blink == 0) return 1;
+        
         if (Cache.TryGetValue((blink, value), out long cached))
         {
             return cached;  
         }
-
-        if (blink == 0) return 1;
 
         long result;
 

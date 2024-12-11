@@ -1,5 +1,7 @@
 ﻿// #define Sample
 
+using System.Numerics;
+
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day11\Sample.txt";
@@ -13,11 +15,15 @@
         .Split(' ')
         .Select(long.Parse)
         .ToArray();
-    
-    StoneLineMagic magic = new StoneLineMagic();
 
+    StoneLineMagic magic = new();
     Console.WriteLine("Part 1: " + magic.Blink(input, 25));
     Console.WriteLine("Part 2: " + magic.Blink(input, 75));
+
+    StoneLineMagicWithLanternFish magicWithLanternFish = new();
+    Console.WriteLine("Part 1: " + magicWithLanternFish.Blink(input, 25));
+    Console.WriteLine("Part 2: " + magicWithLanternFish.Blink(input, 75));
+
     Console.ReadLine();
 }
 
@@ -43,7 +49,7 @@ class StoneLineMagic
         {
             result = Blink(1, blink - 1);
         }
-        else if (IsSplittableNumber(value, out long leftPart, out long rightPart))
+        else if (value.IsSplittableNumber(out long leftPart, out long rightPart))
         {
             long leftCount = Blink(leftPart, blink - 1);
             long rightCount = Blink(rightPart, blink - 1);
@@ -58,8 +64,52 @@ class StoneLineMagic
 
         return result;
     }
+}
 
-    bool IsSplittableNumber(long number, out long leftPart, out long rightPart)
+class StoneLineMagicWithLanternFish
+{
+    public long Blink(long[] input, int blink)
+    {
+        var counts = 
+            input.CountBy(i => i)
+            .ToDictionary(p => p.Key, p => (long)p.Value);
+
+        foreach (var step in Enumerable.Range(1, blink))
+        {
+            counts = PerformStep(counts);
+        }
+
+        return counts.Values.Sum();
+    }
+
+    private Dictionary<long, long> PerformStep(Dictionary<long, long> input)
+    {
+        Dictionary<long, long> result = [];
+
+        foreach((long value, long count) in input)
+        {
+            if (value == 0)
+            {
+                result.AddSum(1, count);
+            }
+            else if (value.IsSplittableNumber(out long leftPart, out long rightPart))
+            {
+                result.AddSum(leftPart, count);
+                result.AddSum(rightPart, count);
+            }
+            else
+            {
+                result.AddSum(value * 2024, count);
+            }
+        }
+
+        return result;
+    }
+}
+
+static class Tools
+{
+    public static bool IsSplittableNumber(this long number, out long leftPart, out long rightPart)
     {
         string str = number.ToString();
 
@@ -73,5 +123,19 @@ class StoneLineMagic
 
         leftPart = rightPart = 0;
         return false;
+    }
+
+    public static void AddSum<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value) 
+        where TKey: IBinaryInteger<TKey>
+        where TValue: IBinaryInteger<TValue>
+    {
+        if(dict.TryGetValue(key, out var current))
+        {
+            dict[key] = current + value;
+        }
+        else
+        {
+            dict[key] = value;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// #define Sample
 
+using System.Diagnostics;
 using System.Numerics;
 
 {
@@ -16,13 +17,18 @@ using System.Numerics;
         .Select(long.Parse)
         .ToArray();
 
+    var watch = Stopwatch.StartNew();
     StoneLineMagic magic = new();
     Console.WriteLine("Part 1: " + magic.Blink(input, 25));
     Console.WriteLine("Part 2: " + magic.Blink(input, 75));
+    Console.WriteLine($"Took {watch.ElapsedMilliseconds} ms");
+    Console.WriteLine();
 
+    watch = Stopwatch.StartNew();
     StoneLineMagicWithLanternFish magicWithLanternFish = new();
     Console.WriteLine("Part 1: " + magicWithLanternFish.Blink(input, 25));
     Console.WriteLine("Part 2: " + magicWithLanternFish.Blink(input, 75));
+    Console.WriteLine($"Took {watch.ElapsedMilliseconds} ms");
 
     Console.ReadLine();
 }

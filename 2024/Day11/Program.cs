@@ -1,7 +1,5 @@
 ﻿// #define Sample
 
-using System.Reflection.PortableExecutable;
-
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day11\Sample.txt";

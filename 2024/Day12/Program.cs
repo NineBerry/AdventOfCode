@@ -14,15 +14,10 @@
     Console.ReadLine();
 }
 
-long Part1(Grid grid)
-{
-    return grid.Regions.Sum(r => r.GetPrice());
-}
+long Part1(Grid grid) => grid.Regions.Sum(r => r.GetPrice());
 
-long Part2(Grid grid)
-{
-    return grid.Regions.Sum(r => r.GetDiscountedPrice());
-}
+long Part2(Grid grid) => grid.Regions.Sum(r => r.GetDiscountedPrice());
+
 
 class Grid
 {
@@ -60,10 +55,10 @@ class Grid
         while (unassignedPlots.Any())
         {
             Point startPoint = unassignedPlots.First();
-            
+
             var plotsInRegion = FindRegion(startPoint);
-            Region region = new Region(this, plotsInRegion);
-            Regions.Add(region);
+
+            Regions.Add(new Region(plotsInRegion));
             
             unassignedPlots.ExceptWith(plotsInRegion);
         }
@@ -96,20 +91,17 @@ class Grid
 
 class Region
 {
-    public readonly Grid Grid;
-    public readonly HashSet<Point> Plots = [];
-    public readonly HashSet<(Point Plot, Direction Direction)> Fences = [];
-    public readonly HashSet<(Point Plot, Direction Direction)> FencePosts = [];
+    private HashSet<Point> Plots = [];
+    private HashSet<(Point Plot, Direction Direction)> Fences = [];
+    private HashSet<(Point Plot, Direction Direction)> FencePosts = [];
 
-    public Region(Grid grid, HashSet<Point> plots)
+    public Region(HashSet<Point> plots)
     {
-        Grid = grid;
         Plots.UnionWith(plots);
-        Fences = InitFences();
-        FencePosts = InitFencePosts();
+        InitFencesAndPosts();
     }
 
-    private HashSet<(Point, Direction)> InitFences()
+    private void InitFencesAndPosts()
     {
         HashSet<(Point, Direction)> result = [];
 
@@ -119,45 +111,33 @@ class Region
             {
                 if (!Plots.Contains(side.Neighbor))
                 {
-                    result.Add((plot, side.Direction));
+                    Fences.Add((plot, side.Direction));
                 }
             }
-        }
 
-        return result;
-    }
-
-    private HashSet<(Point, Direction)> InitFencePosts()
-    {
-        HashSet<(Point, Direction)> result = [];
-
-        foreach (var plot in Plots)
-        {
             foreach (var side in plot.GetAllNeighboringPointsWithDirectionDiagonal())
             {
                 if (!Plots.Contains(side.Neighbor))
                 {
-                    result.Add((plot, side.Direction));
+                    FencePosts.Add((plot, side.Direction));
                 }
             }
         }
-
-        return result;
     }
-
     private long CountSides()
     {
         long count = 0;
 
         // We count corners. That's the same number as sides. 
-        foreach (var plotFences in Fences.Union(FencePosts).GroupBy(f => f.Plot))
+        foreach (var plotFencesAndPosts in Fences.Union(FencePosts).GroupBy(f => f.Plot))
         {
-            var directions = plotFences.Select(d => d.Direction).ToHashSet();
+            var directions = plotFencesAndPosts.Select(d => d.Direction).ToHashSet();
 
             // Corners with fences on both angels
-            // e.g. TopLeft corner
+            // e.g. TopLeft corner for marked R
             //        o---
             //        |RRR
+            //         ^ 
 
             if (directions.Contains(Direction.Right)
                 && directions.Contains(Direction.Top))
@@ -176,11 +156,12 @@ class Region
                 count++;
 
             // Corners with fencepost but no fence on either angle
-            // e.g. TopLeft corner
+            // e.g. TopLeft corner for marked R
             //
             //        |RRR  
             //      --oRRR
             //      RRRRRR
+            //         ^
 
             if (directions.Contains(Direction.TopRight)
                 && !directions.Contains(Direction.Right)

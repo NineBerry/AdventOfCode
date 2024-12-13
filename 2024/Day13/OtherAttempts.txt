@@ -1,0 +1,96 @@
+﻿First attempt for part 1 was using brute force. 
+Worked, but not needed any more after solving part 2:
+
+record ClawMachine
+{
+    public Point ButtonAIncrease;
+    public Point ButtonBIncrease;
+    public Point PrizeAt;
+    
+    public ClawMachine(string input)
+    {
+        int[] values = Regex.Matches(input, @"\d+").Select(m => int.Parse(m.Value)).ToArray();
+
+        ButtonAIncrease = new(values[0], values[1]);
+        ButtonBIncrease = new(values[2], values[3]);
+        PrizeAt = new(values[4], values[5]);
+    }
+
+    public long GetSmallestCostToWinPrize()
+    {
+        var queue = new PriorityQueue<(Point Current, long PressesA, long PressesB), long>();
+        queue.Enqueue((new Point(0,0), 0, 0), 0);
+        HashSet<(long, long)> seenCombos = [];
+
+        while(queue.TryDequeue(out var todo, out long cost))
+        {
+            if (todo.Current == PrizeAt)
+            {
+                return cost;
+            }
+
+            CheckEnqueue(todo.Current.AddVector(ButtonAIncrease), todo.PressesA + 1, todo.PressesB, cost + 3);
+            CheckEnqueue(todo.Current.AddVector(ButtonBIncrease), todo.PressesA, todo.PressesB + 1, cost + 1);
+
+            void CheckEnqueue(Point newCurrent, long newPressesA, long newPressesB, long newCost)
+            {
+                if (newCurrent.X > PrizeAt.X) return;
+                if (newCurrent.Y > PrizeAt.Y) return;
+                if (newPressesA > 100) return;
+                if (newPressesB > 100) return;
+                if (seenCombos.Contains((newPressesA, newPressesB))) return;
+                seenCombos.Add((newPressesA, newPressesB));
+
+                queue.Enqueue((newCurrent, newPressesA, newPressesB), newCost);
+            }
+        }
+
+        return 0;
+    }
+}
+
+First attempt for part 2 was trying to use diophantine and crt in Python. 
+This astonishlingly worked for Part1 of the sample input, but then failed
+for both the sample input modified for part 2 and the full input Part 1.
+
+        sb.AppendLine(
+            """
+            from sympy.solvers.diophantine import diop_solve
+            from sympy.ntheory.modular import crt
+            from sympy import symbols
+            from sympy import Number
+            from sympy import preorder_traversal
+
+
+            def getNumbersFromExpression(expr):
+                numbers = [term for term in preorder_traversal(expr) if isinstance(term, Number)]
+                return numbers
+
+            def findCheapestWin(aIncreaseX, aIncreaseY, bIncreaseX, bIncreaseY, targetX, targetY):
+                a, b, m = symbols("a b m")
+
+                solution =  diop_solve(aIncreaseX * a + bIncreaseX * b - targetX, m)    
+                if solution[0] is None: return 0
+
+                numbersXA = getNumbersFromExpression(solution[0])
+                numbersXB = getNumbersFromExpression(solution[1])
+
+                solution =  diop_solve(aIncreaseY * a + bIncreaseY * b - targetY, m)    
+                if solution[0] is None: return 0
+                numbersYA = getNumbersFromExpression(solution[0])
+                numbersYB = getNumbersFromExpression(solution[1])
+
+                resultA = crt([numbersXA[1], numbersYA[1]], [numbersXA[0], numbersYA[0]])
+                resultB = crt([numbersXB[1], numbersYB[1]], [numbersXB[0], numbersYB[0]])
+
+                return resultA[0] * 3 + resultB[0]
+
+
+            result = 0;
+            
+            """);
+
+Then I noticed that this is a simple 2 x 2 linear equation system. I could have 
+solved the equation system myself and implemented as c# code, but then since I
+already had the code to generate a pyhton script for the input data, I decided
+to use Python's normal solve().

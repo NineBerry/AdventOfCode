@@ -66,11 +66,16 @@ class Grid
         long middleX = (Width / 2);
         long middleY = (Height / 2);
 
+        var rangeLeftX = new InclusiveRange(0, middleX - 1);
+        var rangeRightX = new InclusiveRange(middleX + 1, Width - 1);
+        var rangeTopY = new InclusiveRange(0, middleY - 1);
+        var rangeBottomY = new InclusiveRange(middleY + 1, Height - 1);
+
         return 1
-            * CountRobotsInArea(robots, new InclusiveRange(0, middleX - 1), new InclusiveRange(0, middleY - 1))
-            * CountRobotsInArea(robots, new InclusiveRange(0, middleX - 1), new InclusiveRange(middleY + 1, Height - 1))
-            * CountRobotsInArea(robots, new InclusiveRange(middleX + 1, Width - 1), new InclusiveRange(0, middleY - 1))
-            * CountRobotsInArea(robots, new InclusiveRange(middleX + 1, Width - 1), new InclusiveRange(middleY + 1, Height - 1));
+            * CountRobotsInArea(robots, rangeLeftX, rangeTopY)
+            * CountRobotsInArea(robots, rangeLeftX, rangeBottomY)
+            * CountRobotsInArea(robots, rangeRightX, rangeTopY)
+            * CountRobotsInArea(robots, rangeRightX,  rangeBottomY);
     }
 
     private long CountRobotsInArea(Robot[] robots, InclusiveRange xRange, InclusiveRange yRange)

@@ -114,7 +114,7 @@ class Grid
                     nextToMove.Add(actualTarget.GetNeightboringPoint(Direction.East));
                     break;
                 case Direction.East:
-                    // If we go east, we skip right part of box
+                    // If we go east, we skip left part of box
                     nextToMove.Remove(actualTarget);
                     nextToMove.Add(actualTarget.GetNeightboringPoint(Direction.East));
                     break;

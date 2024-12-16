@@ -72,10 +72,7 @@ class Grid
     // Ideas for performance improvement: 
     // ==================================
     // * Use the trick from 2023 Day 23 and first collapse map into minimal graph
-    // * Detect deadends?
-    //   If we are at a spot where all three next directions
-    //   are walls are already marked as deadends:
-    //   retrace to where we turned last and mark the step after that a dead end
+    // * Treat Nort/South and West/East as one direction in visited and other collections
 
     internal (Path[] Paths, long Score) FindLowestScorePaths()
     {

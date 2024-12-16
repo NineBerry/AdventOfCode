@@ -100,13 +100,13 @@ class Grid
                 paths.Add(current.Path);
             }
 
-            CheckAdd((currentPosition.Point, currentPosition.Direction.TurnLeft()), score + 1001);
-            CheckAdd((currentPosition.Point, currentPosition.Direction.TurnRight()), score + 1001);
-            CheckAdd((currentPosition.Point, currentPosition.Direction), score + 1);
+            CheckAdd(currentPosition.Direction.TurnLeft(), score + 1000 + 1);
+            CheckAdd(currentPosition.Direction.TurnRight(), score + 1000 + 1);
+            CheckAdd(currentPosition.Direction, score + 1);
 
-            void CheckAdd((Point Point, Direction Direction) next, long nextScore)
+            void CheckAdd(Direction nextDirection, long nextScore)
             {
-                next.Point = next.Point.GetNeightboringPoint(next.Direction);
+                var next = (Point: currentPosition.Point.GetNeightboringPoint(nextDirection), Direction: nextDirection);
 
                 if (IsWall(next.Point)) return;
                 if (current.Visited.Contains(next)) return;

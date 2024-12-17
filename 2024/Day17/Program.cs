@@ -1,6 +1,7 @@
 ﻿// #define Sample
 
 using System.Text.RegularExpressions;
+using static Computer;
 
 {
 #if Sample
@@ -33,11 +34,11 @@ long Part2(string fileName)
 
 long[] FindCycles(long[] program)
 {
-    long test = 0;
+    long test = 1;
     long currentIncrement = 1;
     long currentCycleCounter = 0;
-    int previousLength = 0;
-    List<long> cycles = [];
+    int previousLength = 1;
+    List<long> cycles = [1];
 
     while (true)
     {
@@ -47,14 +48,16 @@ long[] FindCycles(long[] program)
         if (output.Length > previousLength)
         {
             // Console.WriteLine($"Found cycle {currentCycleCounter} at {test}");
-            
             cycles.Add(currentIncrement);
             previousLength = output.Length;
             currentIncrement *= currentCycleCounter;
             currentCycleCounter = 0;
         }
 
-        if (output.Length == program.Length) break;
+        if (output.Length == program.Length)
+        {
+            break;
+        }
 
         test += currentIncrement;
     }
@@ -68,27 +71,20 @@ long LockPick(long[] program, int positionToMatch, long[] cycles, long test)
 {
     long currentIncrement = cycles[positionToMatch];
 
-    foreach (var _ in Enumerable.Range(0, 8))
+    while(true)
     {
         var output = RunComputer(program, test);
         
-        if (positionToMatch == 0)
+        if(Tools.EqualEnds(program, output, positionToMatch))
         {
-            if (output.Zip(program).All(p => p.First == p.Second)) return test;
-        }
-        else
-        {
-            if (program[positionToMatch] == output[positionToMatch])
-            {
-                long result = LockPick(program, positionToMatch - 1, cycles, test);
-                if(result != 0) return result;  
-            }
+            if (positionToMatch == 0) return test;
+
+            long result = LockPick(program, positionToMatch - 1, cycles, test);
+            if (result != 0) return result;
         }
 
         test += currentIncrement;                    
     }
-
-    return 0;
 }
 
 long[] RunComputer(long[] program, long registerA)
@@ -124,5 +120,12 @@ public static class Tools
             Regex.Matches(input, @"-?\d+")
             .Select(m => long.Parse(m.Value))
             .ToArray();
+    }
+
+    public static bool EqualEnds(long[] first, long[] second, int offset)
+    {
+        return first.Skip(offset)
+            .Zip(second.Skip(offset))
+            .All(p => p.First == p.Second);
     }
 }

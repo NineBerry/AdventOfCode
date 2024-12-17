@@ -53,7 +53,7 @@ long Part2(string fileName)
 
 long[] FindCycles(long[] program)
 {
-    long test = 0;
+    long test = 1;
     long currentIncrement = 1;
     long currentCycleCounter = 0;
     int previousLength = 1;
@@ -69,7 +69,7 @@ long[] FindCycles(long[] program)
             // Console.WriteLine($"Found cycle {currentCycleCounter} at {test}");
             cycles.Add(currentIncrement);
             previousLength = output.Length;
-            // currentIncrement *= currentCycleCounter;
+            currentIncrement *= currentCycleCounter;
             currentCycleCounter = 0;
         }
 
@@ -90,7 +90,7 @@ long LockPick(long[] program, int positionToMatch, long[] cycles, long test)
 {
     long currentIncrement = cycles[positionToMatch];
 
-    while(true)
+    while (true) 
     {
         var output = RunComputer(program, test);
         

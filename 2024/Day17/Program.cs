@@ -38,13 +38,10 @@ string Part1(string fileName)
 // octal system. In fact it is hard to overlook the 
 // number 8 in the puzzle description
 // ====
-// So an alternative approch would be:
-// Run the computer script for values 0-7 to get 
-// the digits that are used instead of normal digits.
-// Then for Part1 just do convert to octal, apply
-// digit mapping and add commas.
-// For Part2 first reverse-apply digit mapping, then
-// convert from octal to decimal.
+// However, which digits are used in the octal system
+// seems to vary from cycle to cylce.
+// Being able to use a simple decimal-octal
+// conversion as the basis would require more investigation
 
 long Part2(string fileName)
 {
@@ -56,7 +53,7 @@ long Part2(string fileName)
 
 long[] FindCycles(long[] program)
 {
-    long test = 1;
+    long test = 0;
     long currentIncrement = 1;
     long currentCycleCounter = 0;
     int previousLength = 1;
@@ -72,7 +69,7 @@ long[] FindCycles(long[] program)
             // Console.WriteLine($"Found cycle {currentCycleCounter} at {test}");
             cycles.Add(currentIncrement);
             previousLength = output.Length;
-            currentIncrement *= currentCycleCounter;
+            // currentIncrement *= currentCycleCounter;
             currentCycleCounter = 0;
         }
 

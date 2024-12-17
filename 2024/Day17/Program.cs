@@ -66,11 +66,11 @@ long[] FindCycles(long[] program)
 
         if (output.Length > previousLength)
         {
-            // Console.WriteLine($"Found cycle {currentCycleCounter} at {test}");
+            Console.WriteLine($"Found cycle {currentCycleCounter} at {test}");
             cycles.Add(currentIncrement);
             previousLength = output.Length;
             currentIncrement *= currentCycleCounter;
-            currentCycleCounter = 0;
+            currentCycleCounter = 1;
         }
 
         if (output.Length == program.Length)
@@ -93,7 +93,9 @@ long LockPick(long[] program, int positionToMatch, long[] cycles, long test)
     while (true) 
     {
         var output = RunComputer(program, test);
-        
+
+        if (output.Length > program.Length) return 0;
+
         if(Tools.EqualEnds(program, output, positionToMatch))
         {
             if (positionToMatch == 0) return test;
@@ -143,6 +145,8 @@ public static class Tools
 
     public static bool EqualEnds(long[] first, long[] second, int offset)
     {
+        if(first.Length != second.Length) return false;
+
         return first.Skip(offset)
             .Zip(second.Skip(offset))
             .All(p => p.First == p.Second);

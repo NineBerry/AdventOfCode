@@ -1,7 +1,6 @@
 ﻿// #define Sample
 
 using System.Text.RegularExpressions;
-using static Computer;
 
 {
 #if Sample
@@ -23,6 +22,29 @@ string Part1(string fileName)
     var output = RunComputer(parsed.Program, parsed.RegisterA);
     return string.Join(',', output);
 }
+
+// I solved this by looking at what happens to output
+// when increasing the input. I saw that the output
+// behaves like a counter. When a value to the left 
+// overflows, the value to its right changes.
+// ====
+// So I run code to find all the cycles for every
+// position. Then apply these cycles to match the 
+// target output from right to left.
+// ====
+// In hindsight, I noticed that this basically does
+// a conversion from decimal values to octal values
+// just using different digits than usual in the
+// octal system. In fact it is hard to overlook the 
+// number 8 in the puzzle description
+// ====
+// So an alternative approch would be:
+// Run the computer script for values 0-7 to get 
+// the digits that are used instead of normal digits.
+// Then for Part1 just do convert to octal, apply
+// digit mapping and add commas.
+// For Part2 first reverse-apply digit mapping, then
+// convert from octal to decimal.
 
 long Part2(string fileName)
 {

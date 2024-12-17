@@ -1,8 +1,6 @@
 ﻿public class Computer
 {
-    public delegate long DoInput(Computer computer);
     public delegate void DoOutput(Computer computer, long value);
-    public event DoInput? Input = null;
     public event DoOutput? Output = null;
 
     public long[] Program = [];
@@ -28,12 +26,6 @@
         }
     }
 
-    public long GetInput()
-    {
-        if (Input == null) throw new ApplicationException("Input event not set");
-        return Input(this);
-    }
-
     public void SetOutput(long value)
     {
         if (Output == null) throw new ApplicationException("Output event not set");
@@ -52,15 +44,10 @@
         };
     }
 
-    private long GetMemory(long index)
-    {
-        return Program[index];
-    }
-
     private Instruction CreateInstruction()
     {
-        long opcode = GetMemory(Pointer);
-        long operand = GetMemory(Pointer + 1);
+        long opcode = Program[Pointer];
+        long operand = Program[Pointer + 1];
 
         return opcode switch
         {
@@ -79,7 +66,6 @@
 
 public abstract class Instruction
 {
-
     public Instruction(long operand)
     {
         Operand = operand;

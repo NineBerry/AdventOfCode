@@ -1,4 +1,4 @@
-﻿#define Sample
+﻿// #define Sample
 using System.Text.RegularExpressions;
 
 {
@@ -11,17 +11,18 @@ using System.Text.RegularExpressions;
     var network = new Network(File.ReadAllLines(fileName));
 
     Console.WriteLine("Part 1: " + Part1(network));
+    Console.WriteLine("Part 2: " + Part2(network));
     Console.ReadLine();
 }
 
 long Part1(Network network)
 {
-    return network.GetMaxFlow();
+    return network.GetMaxFlow(30, network.RelevantValves.ToHashSet());
 }
-
-// 1671 too low
-// 1719 too low
-// 1998 too low
+long Part2(Network network)
+{
+    return network.GetMaxFlowPair();
+}
 
 public class Valve
 {
@@ -47,11 +48,11 @@ public class Network
     public Network(string[] lines)
     {
         Valves = lines.Select(s => new Valve(s)).ToDictionary(v => v.Name, v => v);
-        RelevantValves = Valves.Values.Where(v => v.FlowValue > 0 || v.Name == "AA").Select(v => v.Name).ToArray();
+        RelevantValves = Valves.Values.Where(v => v.FlowValue > 0).Select(v => v.Name).ToArray();
 
-        foreach(var v1 in RelevantValves)
+        foreach(var v1 in RelevantValves.Union(["AA"]))
         {
-            foreach(var v2 in RelevantValves)
+            foreach (var v2 in RelevantValves.Union(["AA"]))
             {
                 if (v1 == v2) continue;
                 Distances[(v1, v2)] = GetDistance(v1, v2);
@@ -59,128 +60,230 @@ public class Network
         }
     }
 
-    public int GetMaxFlow()
+    public int GetMaxFlow(int totalMinutes, HashSet<string> availableValves)
     {
-        // return 0;
+        int max = 0;
 
-        return GetCombinations();
+        Recurse(0, 0, 0, "AA", availableValves);
 
-        // TODO: Idea actual output and combination finding together.
-        // Move the check whether the path is potentially higher than the furtest so far
-        // from output calculcation to combination finding
-
-
-        /* List<Valve>[] combinations = GetCombinations();
-
-        int maxOutput = 0;
-
-        int combCount = combinations.Length;
-        int counter = 0;
-        int percentValue = combCount / 100;
-        foreach(var comb in combinations)
+        void Recurse(int minutesPassed, int flowPerMinute, int sumFlow, string currentValve, HashSet<string> remainingValves)
         {
-            counter++;
-            if(counter  % percentValue == 0)
+            if (minutesPassed > totalMinutes) return;
+
+            ReportFlow(minutesPassed, sumFlow, flowPerMinute);
+
+            foreach (var nextValve in remainingValves)
             {
-                Console.Write("\r" + (counter / percentValue) + "%");
+                int minutesToWalk = Distances[(currentValve, nextValve)].Length - 1;
+                int minutesToOpen = 1;
+                int flowWhileWalking = minutesToWalk * flowPerMinute;
+                int flowWhileOpening = flowPerMinute;
+
+                int newFlowPerMinute = flowPerMinute + Valves[nextValve].FlowValue;
+
+                Recurse(
+                    minutesPassed + minutesToWalk + minutesToOpen,
+                    newFlowPerMinute,
+                    sumFlow + flowWhileWalking + flowWhileOpening,
+                    nextValve,
+                    remainingValves.Except([nextValve]).ToHashSet());
             }
-
-
-            maxOutput = Math.Max(maxOutput, GetOutput(comb));
         }
 
-        // maxOutput = Math.Max(maxOutput, GetOutput(comb));
+        void ReportFlow(int minutesPassed, int sumFlow, int flowPerMinute)
+        {
+            int minutesLeft = totalMinutes - minutesPassed;
+            sumFlow += minutesLeft * flowPerMinute;
+            max = Math.Max(max, sumFlow);
+        }
 
-        return maxOutput;*/
-
-        // List<Valve> comb = [Valves["AA"], Valves["DD"], Valves["BB"], Valves["JJ"], Valves["HH"], Valves["EE"], Valves["CC"]];
-        // List<Valve> comb = [Valves["AA"], Valves["HH"], Valves["JJ"], Valves["DD"], Valves["BB"], Valves["EE"], Valves["CC"]];
-        // return GetOutput(comb);
+        return max;
     }
 
-    private int max = 0;
-
-    private int GetOutput(List<Valve> combination)
+    // Ideas for possible improvements:
+    // * Cull tree by estimating best expected result and comparing with current max
+    // * Chose valves in order as found in Part1
+    public int GetMaxFlowPair()
     {
-        int output = 0;
-        int minute = 0;
-        int currentFlow = 0;
-        
-        Queue<Valve> remaining = new(combination.Skip(1));
-        Valve current = combination.First();
-        Valve next = remaining.Dequeue();
-        int minutesToNext = Distances[(current.Name, next.Name)].Length;
+        int totalMinutes = 26;
+        int max = 0;
 
-        while (minute <= 30)
+        Recurse(0, 0, 0, "AA", 0, "AA", 0, RelevantValves.ToHashSet());
+
+        void Recurse(int minutesPassed, int flowPerMinute, int sumFlow, 
+            string p1Target, int p1StepsLeft,
+            string p2Target, int p2StepsLeft,
+            HashSet<string> remainingValves)
         {
-            // Console.WriteLine($"Minute {minute} Releasing {currentFlow}");            
-            output += currentFlow;
+            ReportFlow(minutesPassed, sumFlow, flowPerMinute);
 
-            int minutesRemaining = 30 - minute;
-            int nextFlowValue = next == null ? 0 : next.FlowValue;
-            int maxPotential =  output +  minutesRemaining * (nextFlowValue + currentFlow + remaining.Sum(r => r.FlowValue));
-            if (maxPotential < max)
+            if (minutesPassed >= totalMinutes) return;
+
+            if(p1StepsLeft < 0 && p2StepsLeft < 0) return;
+
+            int nextFlowPerMinute = flowPerMinute;
+
+            bool newPlayer1 = false;
+            bool newPlayer2 = false;
+
+            if (p1StepsLeft == 0)
             {
-                Console.WriteLine("Early exit");
-                return 0;
+                newPlayer1 = true;
+                nextFlowPerMinute = nextFlowPerMinute + Valves[p1Target].FlowValue;
             }
 
-            if (minutesToNext > 0)
+            if (p2StepsLeft == 0)
             {
-                minutesToNext--;
+                newPlayer2 = true;
+                nextFlowPerMinute = nextFlowPerMinute + Valves[p2Target].FlowValue;
             }
-            else
-            {
-                // Console.WriteLine($"Opening valve {next.Name} at minute {minute}");
 
-                currentFlow += next.FlowValue;
-                current = next;
-                
-                if(remaining.Count == 0)
+            int nextSumFlow = sumFlow + nextFlowPerMinute;
+
+            if (!remainingValves.Any())
+            {
+                Recurse(
+                    minutesPassed + 1,
+                    nextFlowPerMinute,
+                    nextSumFlow,
+                    p1Target,
+                    p1StepsLeft - 1,
+                    p2Target,
+                    p2StepsLeft - 1,
+                    remainingValves);
+            }
+
+            if (newPlayer1 && newPlayer2)
+            {
+                if (p1Target == p2Target)
                 {
-                    next = null!;
-                    minutesToNext = int.MaxValue;
+                    var remainingList = remainingValves.ToList();
+                    
+                    for (int i = 0; i < remainingList.Count; i++)
+                    {
+                        for (int j = i + 1; j < remainingList.Count; j++)
+                        {
+                            string nextValveP1 = remainingList[i];
+                            string nextValveP2 = remainingList[j];
+                            int timeToTargetP1 = Distances[(p1Target, nextValveP1)].Length - 1;
+                            int timeToTargetP2 = Distances[(p2Target, nextValveP2)].Length - 1;
+
+                            Recurse(
+                                minutesPassed + 1,
+                                nextFlowPerMinute,
+                                nextSumFlow,
+                                nextValveP1,
+                                timeToTargetP1,
+                                nextValveP2,
+                                timeToTargetP2,
+                                remainingValves.Except([nextValveP1, nextValveP2]).ToHashSet());
+                        }
+                    }
                 }
                 else
                 {
-                    next = remaining.Dequeue();
-                    minutesToNext = Distances[(current.Name, next.Name)].Length - 1;
+                    foreach (var nextValveP1 in remainingValves)
+                    {
+                        foreach (var nextValveP2 in remainingValves)
+                        {
+                            if (nextValveP1 == nextValveP2) continue;
+
+                            int timeToTargetP1 = Distances[(p1Target, nextValveP1)].Length - 1;
+                            int timeToTargetP2 = Distances[(p2Target, nextValveP2)].Length - 1;
+
+                            Recurse(
+                                minutesPassed + 1,
+                                nextFlowPerMinute,
+                                nextSumFlow,
+                                nextValveP1,
+                                timeToTargetP1,
+                                nextValveP2,
+                                timeToTargetP2,
+                                remainingValves.Except([nextValveP1, nextValveP2]).ToHashSet());
+                        }
+                    }
+
+                }
+
+                foreach (var nextValveP1 in remainingValves)
+                {
+                    foreach (var nextValveP2 in remainingValves)
+                    {
+                        if (nextValveP1 == nextValveP2) continue;
+
+                        int timeToTargetP1 = Distances[(p1Target, nextValveP1)].Length - 1;
+                        int timeToTargetP2 = Distances[(p2Target, nextValveP2)].Length - 1;
+
+                        Recurse(
+                            minutesPassed + 1,
+                            nextFlowPerMinute,
+                            nextSumFlow,
+                            nextValveP1,
+                            timeToTargetP1,
+                            nextValveP2,
+                            timeToTargetP2,
+                            remainingValves.Except([nextValveP1, nextValveP2]).ToHashSet());
+                    }
                 }
             }
-
-            minute++;    
+            else if (newPlayer1)
+            {
+                foreach (var nextValve in remainingValves)
+                {
+                    int timeToTargetP1 = Distances[(p1Target, nextValve)].Length - 1;
+                    Recurse(
+                        minutesPassed + 1,
+                        nextFlowPerMinute,
+                        nextSumFlow,
+                        nextValve,
+                        timeToTargetP1,
+                        p2Target,
+                        p2StepsLeft - 1,
+                        remainingValves.Except([nextValve]).ToHashSet());
+                }
+            }
+            else if (newPlayer2)
+            {
+                foreach (var nextValve in remainingValves)
+                {
+                    int timeToTargetP2 = Distances[(p2Target, nextValve)].Length - 1;
+                    Recurse(
+                        minutesPassed + 1,
+                        nextFlowPerMinute,
+                        nextSumFlow,
+                        p1Target,
+                        p1StepsLeft - 1,
+                        nextValve,
+                        timeToTargetP2,
+                        remainingValves.Except([nextValve]).ToHashSet());
+                }
+            }
+            else
+            {
+                Recurse(
+                    minutesPassed + 1,
+                    nextFlowPerMinute,
+                    nextSumFlow,
+                    p1Target,
+                    p1StepsLeft - 1,
+                    p2Target,
+                    p2StepsLeft - 1,
+                    remainingValves);
+            }
         }
 
-        if(output > max)
+        void ReportFlow(int minutesPassed, int sumFlow, int flowPerMinute)
         {
-            max = output;
-            Console.WriteLine(max);
+            int minutesLeft = totalMinutes - minutesPassed;
+            sumFlow += minutesLeft * flowPerMinute;
+            if (sumFlow > max)
+            {
+                max = Math.Max(max, sumFlow);
+                Console.WriteLine(max);
+            }
         }
 
-        return output;
-    }
-
-    private int GetCombinations()
-    {
-        max = 0;
-
-        Valve start = Valves["AA"];
-        Valve[] remaining = RelevantValves.Where(s => s != "AA").Select(v => Valves[v]).OrderByDescending(v => v.FlowValue).ToArray();
-        return GetCombinationsRecursive([start], remaining.ToList());
-    }
-
-    private int GetCombinationsRecursive(List<Valve> soFar, List<Valve> remaining)
-    {
-        if(!remaining.Any()) return GetOutput(soFar);
-
-        int result = 0;
-
-        foreach(var next in remaining.OrderByDescending(s => s.FlowValue).Take(5))
-        {
-            result = Math.Max(result, GetCombinationsRecursive([..soFar, next], remaining.Except([next]).ToList()));
-        }
-
-        return result;
+        return max;
     }
 
     private string[] GetDistance(string source, string target)

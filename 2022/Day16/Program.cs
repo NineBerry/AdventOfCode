@@ -17,11 +17,11 @@ using System.Text.RegularExpressions;
 
 long Part1(Network network)
 {
-    return network.GetMaxFlow(30, network.RelevantValves.ToHashSet());
+    return network.GetMaxFlow(30, false);
 }
 long Part2(Network network)
 {
-    return network.GetMaxFlowPair();
+    return network.GetMaxFlow(26, true);
 }
 
 public class Valve
@@ -60,66 +60,33 @@ public class Network
         }
     }
 
-    public int GetMaxFlow(int totalMinutes, HashSet<string> availableValves)
+    public int GetMaxFlow(int totalMinutes, bool allowSecondPlayer)
     {
         int max = 0;
+        Dictionary<int, int> seenAt = [];
 
-        Recurse(0, 0, 0, "AA", availableValves);
+        Recurse(0, 0, 0, 
+            "AA", 0, 
+            "AA", allowSecondPlayer ? 0 : -1, 
+            RelevantValves.ToHashSet());
 
-        void Recurse(int minutesPassed, int flowPerMinute, int sumFlow, string currentValve, HashSet<string> remainingValves)
-        {
-            if (minutesPassed > totalMinutes) return;
-
-            ReportFlow(minutesPassed, sumFlow, flowPerMinute);
-
-            foreach (var nextValve in remainingValves)
-            {
-                int minutesToWalk = Distances[(currentValve, nextValve)].Length - 1;
-                int minutesToOpen = 1;
-                int flowWhileWalking = minutesToWalk * flowPerMinute;
-                int flowWhileOpening = flowPerMinute;
-
-                int newFlowPerMinute = flowPerMinute + Valves[nextValve].FlowValue;
-
-                Recurse(
-                    minutesPassed + minutesToWalk + minutesToOpen,
-                    newFlowPerMinute,
-                    sumFlow + flowWhileWalking + flowWhileOpening,
-                    nextValve,
-                    remainingValves.Except([nextValve]).ToHashSet());
-            }
-        }
-
-        void ReportFlow(int minutesPassed, int sumFlow, int flowPerMinute)
-        {
-            int minutesLeft = totalMinutes - minutesPassed;
-            sumFlow += minutesLeft * flowPerMinute;
-            max = Math.Max(max, sumFlow);
-        }
-
-        return max;
-    }
-
-    // Ideas for possible improvements:
-    // * Cull tree by estimating best expected result and comparing with current max
-    // * Chose valves in order as found in Part1
-    public int GetMaxFlowPair()
-    {
-        int totalMinutes = 26;
-        int max = 0;
-
-        Recurse(0, 0, 0, "AA", 0, "AA", 0, RelevantValves.ToHashSet());
-
-        void Recurse(int minutesPassed, int flowPerMinute, int sumFlow, 
+        void Recurse(
+            int minutesPassed, int flowPerMinute, int sumFlow, 
             string p1Target, int p1StepsLeft,
             string p2Target, int p2StepsLeft,
             HashSet<string> remainingValves)
         {
             ReportFlow(minutesPassed, sumFlow, flowPerMinute);
 
+            if(seenAt.TryGetValue(minutesPassed, out int maxSeenAtStep))
+            {
+                if (sumFlow < maxSeenAtStep - 100) return;
+            }
+            seenAt[minutesPassed] = Math.Max(maxSeenAtStep, sumFlow);
+
             if (minutesPassed >= totalMinutes) return;
 
-            if(p1StepsLeft < 0 && p2StepsLeft < 0) return;
+            if (p1StepsLeft < 0 && p2StepsLeft < 0) return;
 
             int nextFlowPerMinute = flowPerMinute;
 
@@ -155,56 +122,6 @@ public class Network
 
             if (newPlayer1 && newPlayer2)
             {
-                if (p1Target == p2Target)
-                {
-                    var remainingList = remainingValves.ToList();
-                    
-                    for (int i = 0; i < remainingList.Count; i++)
-                    {
-                        for (int j = i + 1; j < remainingList.Count; j++)
-                        {
-                            string nextValveP1 = remainingList[i];
-                            string nextValveP2 = remainingList[j];
-                            int timeToTargetP1 = Distances[(p1Target, nextValveP1)].Length - 1;
-                            int timeToTargetP2 = Distances[(p2Target, nextValveP2)].Length - 1;
-
-                            Recurse(
-                                minutesPassed + 1,
-                                nextFlowPerMinute,
-                                nextSumFlow,
-                                nextValveP1,
-                                timeToTargetP1,
-                                nextValveP2,
-                                timeToTargetP2,
-                                remainingValves.Except([nextValveP1, nextValveP2]).ToHashSet());
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var nextValveP1 in remainingValves)
-                    {
-                        foreach (var nextValveP2 in remainingValves)
-                        {
-                            if (nextValveP1 == nextValveP2) continue;
-
-                            int timeToTargetP1 = Distances[(p1Target, nextValveP1)].Length - 1;
-                            int timeToTargetP2 = Distances[(p2Target, nextValveP2)].Length - 1;
-
-                            Recurse(
-                                minutesPassed + 1,
-                                nextFlowPerMinute,
-                                nextSumFlow,
-                                nextValveP1,
-                                timeToTargetP1,
-                                nextValveP2,
-                                timeToTargetP2,
-                                remainingValves.Except([nextValveP1, nextValveP2]).ToHashSet());
-                        }
-                    }
-
-                }
-
                 foreach (var nextValveP1 in remainingValves)
                 {
                     foreach (var nextValveP2 in remainingValves)
@@ -276,11 +193,7 @@ public class Network
         {
             int minutesLeft = totalMinutes - minutesPassed;
             sumFlow += minutesLeft * flowPerMinute;
-            if (sumFlow > max)
-            {
-                max = Math.Max(max, sumFlow);
-                Console.WriteLine(max);
-            }
+            max = Math.Max(max, sumFlow);
         }
 
         return max;

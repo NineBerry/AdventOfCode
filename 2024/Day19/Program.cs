@@ -9,7 +9,7 @@
 
     var lines = File.ReadAllLines(fileName);
 
-    var availableDesigns = lines[0].Split(',', StringSplitOptions.TrimEntries).ToHashSet();
+    var availableDesigns = lines[0].Split(',', StringSplitOptions.TrimEntries).ToArray();
     var requestedTowels = lines.Skip(2).ToArray();
     Onsen onsen = new(availableDesigns);
 
@@ -31,10 +31,10 @@ long Part2(Onsen onsen, string[] requestedTowels)
 
 public class Onsen
 {
-    private HashSet<string> AvailableDesigns;
+    private string[] AvailableDesigns;
     private Dictionary<string, long> CombinationCounts = [];
 
-    public Onsen(HashSet<string> availableDesigns)
+    public Onsen(string[] availableDesigns)
     {
         AvailableDesigns = availableDesigns;
     }
@@ -52,7 +52,7 @@ public class Onsen
 
         foreach (var design in AvailableDesigns)
         {
-            if (towel.StartsWith(design))
+            if (towel.StartsWith(design, StringComparison.Ordinal))
             {
                 result += GetCombinationCount(towel.Substring(design.Length));
             }

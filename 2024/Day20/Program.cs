@@ -11,11 +11,16 @@
 
     Grid grid = new Grid(File.ReadAllLines(fileName));
 
+    Console.WriteLine("Manhattan: ");
+    Console.WriteLine("Part 1: " + SolveManhattan(grid, 2));
+    Console.WriteLine("Part 2: " + SolveManhattan(grid, 20));
+    Console.WriteLine("Grid walking: ");
     Console.WriteLine("Part 1: " + Solve(grid, 2, fullOutput));
     Console.WriteLine("Part 2: " + Solve(grid, 20, fullOutput));
     Console.ReadLine();
 }
 
+// Original implementation
 int Solve(Grid grid, int maxCheatTime, bool fullOutput)
 {
     var cheats = grid.GetCheats(maxCheatTime);  
@@ -32,6 +37,13 @@ int Solve(Grid grid, int maxCheatTime, bool fullOutput)
     return cheats.Count(c => c.StepsSaved >= 100);
 }
 
+// Optimized implementation
+int SolveManhattan(Grid grid, int maxCheatTime)
+{
+    return grid.GetCheatsCountManhattan(maxCheatTime);
+}
+
+
 class Grid
 {
     private readonly int Height;
@@ -41,14 +53,17 @@ class Grid
     private HashSet<Point> Wall = [];
 
     // point => position in path
-    private Dictionary<Point, int> ThePath;
+    private Dictionary<Point, int> ThePathIndexes;
+    private Point[] ThePath;
 
     public Grid(string[] lines)
     {
         Height = lines.Length;
         Width = lines.First().Length;
         InitTiles(lines);
-        ThePath = GetReachablePoints(MapStartPoint, int.MaxValue, obeyWalls: true).ToDictionary();
+        
+        ThePathIndexes = GetReachablePoints(MapStartPoint, int.MaxValue, obeyWalls: true).ToDictionary();
+        ThePath = ThePathIndexes.OrderBy(p => p.Value).Select(p => p.Key).ToArray();
     }
 
     private void InitTiles(string[] lines)
@@ -104,11 +119,40 @@ class Grid
         return result;
     }
 
+    public int GetCheatsCountManhattan(int maxCheatTime)
+    {
+        int count = 0;
+
+        for (int cheatStartPosition=0; cheatStartPosition < ThePath.Length; cheatStartPosition++)
+        {
+            Point cheatStart = ThePath[cheatStartPosition];
+
+            for (
+                int worthyTargetPosition=cheatStartPosition + 100; 
+                worthyTargetPosition < ThePath.Length; 
+                worthyTargetPosition++)
+            {
+                Point worthyTarget = ThePath[worthyTargetPosition];
+                
+                int manhattanDistance = cheatStart.ManhattanDistance(worthyTarget);
+                int regularDistance = worthyTargetPosition - cheatStartPosition;
+                int saved = regularDistance - manhattanDistance;
+
+                if (saved >= 100 && manhattanDistance <= maxCheatTime)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
     public Cheat[] GetCheats(int maxCheatTime)
     {
         List<Cheat> cheats = [];
         
-        foreach(var cheatStart in ThePath)
+        foreach(var cheatStart in ThePathIndexes)
         {
             cheats.AddRange(GetCheats(cheatStart.Key, maxCheatTime));
         }
@@ -120,13 +164,13 @@ class Grid
     {
         List<Cheat> cheats = [];
 
-        int originalPosition = ThePath[point];
+        int originalPosition = ThePathIndexes[point];
 
         var reachablePoints = GetReachablePoints(point, maxCheatTime, obeyWalls: false);
 
         foreach (var reachable in reachablePoints)
         {
-            if (ThePath.TryGetValue(reachable.Point, out int reachableOriginalPosition))
+            if (ThePathIndexes.TryGetValue(reachable.Point, out int reachableOriginalPosition))
             {
                 int reachableNewPosition = originalPosition + reachable.Distance;
                 int saved = reachableOriginalPosition - reachableNewPosition;
@@ -178,5 +222,12 @@ record struct Point(int X, int Y)
             Direction.East => this with { X = X + 1 },
             _ => throw new ArgumentException("Unknown direction", nameof(direction)),
         };
+    }
+
+    public int ManhattanDistance(Point point)
+    {
+        var xDistance = Math.Abs(point.X - X);
+        var yDistance = Math.Abs(point.Y - Y);
+        return xDistance + yDistance;
     }
 }

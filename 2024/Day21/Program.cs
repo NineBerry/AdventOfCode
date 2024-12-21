@@ -1,7 +1,5 @@
 ﻿// #define Sample
 
-using System.Numerics;
-
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day21\Sample.txt";
@@ -23,7 +21,15 @@ long Solve(string[] codesToEnter, int countDirectionalKeypads)
 }
 
 
-
+// Part 2
+// 203531410 too low
+// 5369454759343 too low
+// 1562056304574850 too high
+// 
+// 14531421692399 is wrong
+// 91582698116141 is wrong
+// 621377047148253 is wrong
+// 1565783261018851 is wrong
 
 
 class Spaceship

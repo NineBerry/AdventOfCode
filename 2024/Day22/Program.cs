@@ -1,4 +1,5 @@
 ﻿// #define Sample
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 {
@@ -37,15 +38,19 @@ class MonkeyMarket
 
     public long GetMostBananas()
     {
-        var bananasAfterSequences = Monkeys.SelectMany(GetSequencesForMonkey);
-        var groupedBySequence = bananasAfterSequences.GroupBy(m => m.Sequence);
-        
-        return groupedBySequence.Max(g => g.Select(m => m.Bananas).Sum());
+        Dictionary<int, int> bananasPerSequence = [];
+
+        foreach (var monkey in Monkeys)
+        {
+            GetSequencesForMonkey(monkey, bananasPerSequence);
+        }
+
+        return bananasPerSequence.Values.Max();
     }
 
-    private IEnumerable<(string Sequence, long Bananas)> GetSequencesForMonkey(long monkey)
+    private void GetSequencesForMonkey(long monkey, Dictionary<int, int> bananasPerSequence)
     {
-        Dictionary<string, long> result = [];
+        HashSet<int> seen = [];
 
         IEnumerable<long> numbers = [monkey, .. RNG.NextNNumbers(monkey, 2000)];
         byte[] prizes = numbers.Select(n => (byte)(n % 10)).ToArray();
@@ -55,16 +60,26 @@ class MonkeyMarket
         for (int pos = 0; pos < differences.Length - 3; pos++)
         {
             sbyte[] sequence = [differences[pos], differences[pos + 1], differences[pos + 2], differences[pos + 3]];
-            byte bananas = prizes[pos + 4];
-            string sequenceString = string.Join(',', sequence);
+           
+            int sequenceHash = MakeSequenceHash(sequence);
 
-            if (!result.ContainsKey(sequenceString))
+            if (!seen.Contains(sequenceHash))
             {
-                result.Add(sequenceString, bananas);
+                seen.Add(sequenceHash);
+
+                byte bananas = prizes[pos + 4];
+                bananasPerSequence.AddSum(sequenceHash, bananas);
             }
         }
+    }
 
-        return result.Select(p => (p.Key, p.Value));
+    private int MakeSequenceHash(sbyte[] sequence)
+    {
+        return
+            1000000 * (sequence[0] + 10) +
+            10000 * (sequence[1] + 10) +
+            100 * (sequence[2] + 10) +
+            1 * (sequence[3] + 10);
     }
 }
 
@@ -119,5 +134,18 @@ public static class Tools
     public static long[] GetNumbers(string fileName)
     {
         return File.ReadAllLines(fileName).Select(long.Parse).ToArray();
+    }
+
+    public static void AddSum<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value)
+        where TValue : IBinaryInteger<TValue>
+    {
+        if (dict.TryGetValue(key, out var current))
+        {
+            dict[key] = current + value;
+        }
+        else
+        {
+            dict[key] = value;
+        }
     }
 }

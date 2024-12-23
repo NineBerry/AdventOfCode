@@ -22,6 +22,7 @@ long Solve(string[] codesToEnter, int countDirectionalKeypads)
 
 long SolveFast(string[] codesToEnter, int countDirectionalKeypads)
 {
+    // Just testing now during development
     Spaceship spaceship = new(2);
     FasterSpaceship fasterSpaceship = new(2);
 
@@ -29,11 +30,10 @@ long SolveFast(string[] codesToEnter, int countDirectionalKeypads)
 
     Console.WriteLine($"Classic : {spaceship.GetButtonPresses(testCode)}");
     Console.WriteLine($"Faster  : {fasterSpaceship.GetButtonPresses(testCode)}");
-
-    // First try to actually
-
-
     return 0;
+
+    // FasterSpaceship fasterSpaceship = new(countDirectionalKeypads);
+    // return codesToEnter.Sum(fasterSpaceship.GetCodeComplexity);
 }
 
 
@@ -58,6 +58,14 @@ class FasterSpaceship
     {
         CountDirectionalKeypads = countDirectionalKeypads;
         DigitalKeypadLevel = CountDirectionalKeypads + 1;
+    }
+
+    public long GetCodeComplexity(string code)
+    {
+        long number = Convert.ToInt64(code.Substring(0, code.Length - 1));
+        long buttonPresses = GetButtonPresses(code);
+
+        return number * buttonPresses;
     }
 
     public long GetButtonPresses(string targetCode)

@@ -10,7 +10,7 @@
     string[] codesToEnter = File.ReadAllLines(fileName);
 
     Console.WriteLine("Part 1: " + Solve(codesToEnter, 2));
-    Console.WriteLine("Part 2: " + Solve(codesToEnter, 25));
+    Console.WriteLine("Part 2: " + SolveFast(codesToEnter, 25));
     Console.ReadLine();
 }
 
@@ -18,6 +18,22 @@ long Solve(string[] codesToEnter, int countDirectionalKeypads)
 {
     Spaceship spaceship = new(countDirectionalKeypads);
     return codesToEnter.Sum(spaceship.GetCodeComplexity);
+}
+
+long SolveFast(string[] codesToEnter, int countDirectionalKeypads)
+{
+    Spaceship spaceship = new(2);
+    FasterSpaceship fasterSpaceship = new(2);
+
+    string testCode = codesToEnter.First();
+
+    Console.WriteLine($"Classic : {spaceship.GetButtonPresses(testCode)}");
+    Console.WriteLine($"Faster  : {fasterSpaceship.GetButtonPresses(testCode)}");
+
+    // First try to actually
+
+
+    return 0;
 }
 
 
@@ -31,6 +47,65 @@ long Solve(string[] codesToEnter, int countDirectionalKeypads)
 // 621377047148253 is wrong
 // 1565783261018851 is wrong
 
+
+class FasterSpaceship
+{
+    private int CountDirectionalKeypads;
+    private int DigitalKeypadLevel;
+
+    Dictionary<(char From, char To, int Level), long> CostCache = [];
+    public FasterSpaceship(int countDirectionalKeypads)
+    {
+        CountDirectionalKeypads = countDirectionalKeypads;
+        DigitalKeypadLevel = CountDirectionalKeypads + 1;
+    }
+
+    public long GetButtonPresses(string targetCode)
+    {
+        return GetSequenceCost(targetCode, DigitalKeypadLevel);
+    }
+
+    private long GetSequenceCost(string sequence, int level)
+    {
+        var movements = ('A' + sequence).Zip(sequence);
+
+        long cost = 0;
+
+        foreach (var movement in movements)
+        {
+            cost += GetCost(movement.First, movement.Second, level);
+            cost += 1; // pressing button
+        }
+
+        return cost;
+    }
+
+    private long GetCost(char from, char to, int level)
+    {
+        if (level == 0) return 0;
+
+        if(CostCache.TryGetValue((from, to, level), out var cached))
+        {
+            return cached;
+        }
+
+        long result = 0;
+
+        // TODO
+        // Plan:
+        // 1. Get all possible paths using tree search
+        // 2. For each possible path, get the cost on the lower level
+        //    by passing the actual path movements to GetSequenceCost with lower level
+        // 3. Take the lowesst cost   
+
+        CostCache.Add((from, to, level), result);
+
+        return result;
+    }
+
+
+
+}
 
 class Spaceship
 {
@@ -49,9 +124,9 @@ class Spaceship
         return number * buttonPresses;
     }
 
-    private long GetButtonPresses(string targetCode)
+    public long GetButtonPresses(string targetCode)
     {
-        Console.WriteLine("Searching code " + targetCode);
+        // Console.WriteLine("Searching code " + targetCode);
 
         HashSet<string> seenCount = [];
         
@@ -62,7 +137,7 @@ class Spaceship
         {
             if (current.DigitsAlreadyFound == targetCode.Length)
             {
-                Console.WriteLine("Returning " + presses);
+                // Console.WriteLine("Returning " + presses);
                 return presses;
             }
 
@@ -96,7 +171,7 @@ class Spaceship
                 // An actual signal was pressed at the very last robot
                 if(answer.NewSignal == exptectedSignal)
                 {
-                    Console.WriteLine("Digit found " + exptectedSignal);
+                    // Console.WriteLine("Digit found " + exptectedSignal);
                     
                     queue.Clear();
                     seenCount.Clear();

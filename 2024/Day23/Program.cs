@@ -1,6 +1,5 @@
 ﻿// #define Sample
 
-using System.Text;
 using System.Text.RegularExpressions;
 
 {
@@ -190,4 +189,3 @@ public class Network : Dictionary<string, HashSet<string>>
         return string.Join(',', nodes.Order());
     }
 }
-

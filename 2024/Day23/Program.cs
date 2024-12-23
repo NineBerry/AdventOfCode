@@ -25,7 +25,8 @@ long Part1(Network network)
 
 string Part2(Network network)
 {
-    return network.MakeNetworkString(network.FindBiggestClique());
+    var biggest = network.FindBiggestCliqueDutchWay();
+    return network.MakeNetworkString(biggest);
 }
 
 public class Network : Dictionary<string, HashSet<string>>
@@ -60,6 +61,8 @@ public class Network : Dictionary<string, HashSet<string>>
         }
     }
 
+
+    // Initial implementation. Takes several seconds but got me the gold star
     internal string[] FindBiggestClique()
     {
         HashSet<string> alreadyHandled = [];
@@ -100,6 +103,39 @@ public class Network : Dictionary<string, HashSet<string>>
         }
 
         return maxClique;
+    }
+
+    // Looked up Bron-Kerbosch and implemented that to improve performance
+    public string[] FindBiggestCliqueDutchWay()
+    {
+        List<HashSet<string>> cliques = [];
+
+        BronKerbosch([], this.Keys.ToHashSet(), [], cliques);
+
+        return cliques.OrderByDescending(c => c.Count).First().ToArray();
+    }
+
+    private void BronKerbosch(HashSet<string> currentMembers, HashSet<string> potentialAdditions, HashSet<string> excluded, List<HashSet<string>> cliques)
+    {
+        if (!potentialAdditions.Any() && !excluded.Any())
+        {
+            cliques.Add(currentMembers);
+            return;
+        }
+
+        foreach (var v in potentialAdditions.ToArray())
+        {
+            var neighborsOfV = this[v];
+
+            BronKerbosch(
+                [.. currentMembers, v],
+                [.. potentialAdditions.Intersect(neighborsOfV)],
+                [.. excluded.Intersect(neighborsOfV)],
+                cliques
+                );
+            potentialAdditions.Remove(v);
+            excluded.Add(v);
+        }
     }
 
     public IEnumerable<string[]> FindCliques(int size)

@@ -1,5 +1,7 @@
 ﻿// #define Sample
 
+using System.Numerics;
+
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2024\Day24\Sample.txt";
@@ -14,7 +16,7 @@
 
 
     Console.WriteLine("Part 1: " + Part1(part1Input, device));
-    // Console.WriteLine("Part 2: " + Part2());
+    Console.WriteLine("Part 2: " + Part2(device));
     Console.ReadLine();
 }
 
@@ -32,9 +34,31 @@ long Part1(IEnumerable<string> input, Device device)
     return device.GetIntegerVariable('z');
 }
 
+// False: ctt,vhw,z08,z15,z22,z23,z31,z32
+// False: ctt,vhw,z13,z29,z31,z32,z36,z38
+
+string Part2(Device device)
+{
+    return device.FindFaultyGates();
+}
+
+// Ideas:
+
+// For Z* find all connected X* and Y* Each Z* must be connected to all X# and Y# where # <= *
+// And must not be connected to an X# or Y# with # > *
+// If we can find these issues, then we find the candidates to swap on the path to wrong input
+
+
+// If this is unsuccessful, use out earlier approach with the behaviourcounter, take the 20 nastiests
+// nodes according to their behaviour and actually simulate pairwise swapping within that smaller group of 
+// candidates.
+
+
 class Device
 {
-    private Dictionary<string, List<Gate>> GatesAtWires = [];
+    private Dictionary<string, List<Gate>> GatesAtInputWires = [];
+    private Dictionary<string, Gate> GatesAtOutputWires = [];
+    private Dictionary<string, string> Redirections = [];
 
     private Dictionary<string, bool> Wires = [];
 
@@ -44,18 +68,18 @@ class Device
         {
             Gate gate = Gate.Factory(this, gateDescription);
 
-            AddGateAtWire(gate.Input1Name, gate);
-            AddGateAtWire(gate.Input2Name, gate);
-            AddGateAtWire(gate.OutputName, gate);
+            AddGateAtInputWire(gate.Input1Name, gate);
+            AddGateAtInputWire(gate.Input2Name, gate);
+            GatesAtOutputWires[gate.OutputName] = gate;
         }
     }
 
-    private void AddGateAtWire(string wire, Gate gate)
+    private void AddGateAtInputWire(string wire, Gate gate)
     {
-        if(!GatesAtWires.TryGetValue(wire, out var list))
+        if(!GatesAtInputWires.TryGetValue(wire, out var list))
         {
             list = [];
-            GatesAtWires[wire] = list;
+            GatesAtInputWires[wire] = list;
         }
 
         list.Add(gate);
@@ -76,9 +100,12 @@ class Device
 
     private void Trigger(string wire)
     {
-        foreach(var gate in GatesAtWires[wire])
+        if(GatesAtInputWires.TryGetValue(wire, out var list))
         {
-            gate.Trigger();
+            foreach (var gate in list)
+            {
+                gate.Trigger();
+            }
         }
     }
 
@@ -104,6 +131,177 @@ class Device
         }
 
         return result;
+    }
+
+    public void SetIntegerVariable(char prefix, long value)
+    {
+
+        foreach(var counter in Enumerable.Range(0, 45))
+        {
+            string name = prefix + counter.ToString("00");
+
+            var bit = (value & (1L << counter)) != 0; 
+            SetWireValue(name, bit);
+        }
+    }
+
+
+    private void Reset()
+    {
+        Wires.Clear();
+    }
+
+    Dictionary<string, HashSet<string>> PrecidingCache = [];
+
+    public HashSet<string> GetPrecidingOutputs(string wire)
+    {
+        if(PrecidingCache.TryGetValue(wire, out var cached))
+        {
+            return cached;
+        }
+        
+        HashSet<string> result = [];
+
+        if (GatesAtOutputWires.TryGetValue(wire, out var gate))
+        {
+            result.Add(wire);
+            result.UnionWith(GetPrecidingOutputs(gate.Input1Name));
+            result.UnionWith(GetPrecidingOutputs(gate.Input2Name));
+        }
+
+
+        PrecidingCache.Add(wire, result);
+        return result;
+    }
+
+
+    private Dictionary<string, int> BehaviourCounter = [];
+    private Dictionary<(string, string), int> PairBehaviourCounter = [];
+
+    public string FindFaultyGates()
+    {
+        Debug(false);
+
+        var marks = BehaviourCounter.OrderBy(x => x.Value).ToList();
+
+
+        foreach (var mark in marks)
+        {
+            Console.WriteLine($"{mark.Key}: {mark.Value}");
+        }
+
+        return string.Join(',', marks.Take(16).Select(x => x.Key).Order()); 
+    }
+
+
+    private bool Debug(bool earlyExit)
+    {
+        bool allWasCorrect = true; 
+
+        foreach (var counter in Enumerable.Range(0, 45))
+        {
+            long op1 = 1 << counter;
+            long op2 = 0;
+            long expected = op1;
+
+            allWasCorrect &= DebugAddition(
+                op1,
+                op2,
+                expected);
+            allWasCorrect &= DebugAddition(
+                op2,
+                op1,
+                expected);
+
+            var expected2 = op1 * 2;
+            allWasCorrect &= DebugAddition(
+                op1,
+                op1,
+                expected2);
+
+            if(earlyExit && !allWasCorrect) return false;
+        }
+
+        foreach (var counter in Enumerable.Range(0, 1000))
+        {
+            long op1 = Random.Shared.NextInt64(35184372088832);
+            long op2 = Random.Shared.NextInt64(35184372088832); ;
+            long expected = op1 + op2;
+
+            allWasCorrect &= DebugAddition(
+                op1,
+                op2,
+                expected);
+            allWasCorrect &= DebugAddition(
+                op2,
+                op1,
+                expected);
+
+            var expected2 = op1 * 2;
+            allWasCorrect &= DebugAddition(
+                op1,
+                op1,
+                expected2);
+
+            var expected3 = op2 * 2;
+            allWasCorrect &= DebugAddition(
+                op2,
+                op2,
+                expected3);
+
+            if (earlyExit && !allWasCorrect) return false;
+        }
+
+
+        return allWasCorrect;
+    }
+
+    public bool DebugAddition(long x, long y, long expected)
+    {
+        Reset();
+        SetIntegerVariable('x', x);
+        SetIntegerVariable('y', y);
+
+        long sum = GetIntegerVariable('z');
+
+        bool wasCorrect = true;
+        HashSet<string> result = [];
+
+        foreach (var counter in Enumerable.Range(0, 45))
+        {
+
+            var actualbit = (sum & (1L << counter)) != 0;
+            var expectedbit = (expected & (1L << counter)) != 0;
+
+
+            var mark = (actualbit == expectedbit) ? 1 : -1;
+
+            if(actualbit != expectedbit) wasCorrect = false;
+
+            string name = 'z' + counter.ToString("00");
+            var outputs = GetPrecidingOutputs(name);
+            foreach(var output in outputs)
+            {
+                BehaviourCounter.AddSum(output, mark);
+            }
+
+            var list = outputs.Order().ToArray();
+
+
+        }
+
+        return wasCorrect;
+    }
+
+    private void ClearRedirections()
+    {
+        Redirections.Clear();
+    }
+
+    private void AddRedirection(string swap1, string swap2)
+    {
+        Redirections[swap1] = swap2;
+        Redirections[swap2] = swap1;
     }
 }
 
@@ -172,4 +370,20 @@ class XorGate : Gate
 {
     public XorGate(Device device, string input1, string input2, string output) : base(device, input1, input2, output) { }
     protected override bool PerformCalculation(bool in1, bool in2) => in1 ^ in2;
+}
+
+public static class Tools
+{
+    public static void AddSum<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value)
+        where TValue : IBinaryInteger<TValue>
+    {
+        if (dict.TryGetValue(key, out var current))
+        {
+            dict[key] = current + value;
+        }
+        else
+        {
+            dict[key] = value;
+        }
+    }
 }

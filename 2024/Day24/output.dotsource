@@ -1,0 +1,1028 @@
+digraph 
+{
+	layout = "fdp"
+	z00 [ pin = True, pos = "10, 0" ]
+	x00 [ pin = True, pos = "0, 0" ]
+	y00 [ pin = True, pos = "0, 1" ]
+	z01 [ pin = True, pos = "10, 2" ]
+	x01 [ pin = True, pos = "0, 2" ]
+	y01 [ pin = True, pos = "0, 3" ]
+	z02 [ pin = True, pos = "10, 4" ]
+	x02 [ pin = True, pos = "0, 4" ]
+	y02 [ pin = True, pos = "0, 5" ]
+	z03 [ pin = True, pos = "10, 6" ]
+	x03 [ pin = True, pos = "0, 6" ]
+	y03 [ pin = True, pos = "0, 7" ]
+	z04 [ pin = True, pos = "10, 8" ]
+	x04 [ pin = True, pos = "0, 8" ]
+	y04 [ pin = True, pos = "0, 9" ]
+	z05 [ pin = True, pos = "10, 10" ]
+	x05 [ pin = True, pos = "0, 10" ]
+	y05 [ pin = True, pos = "0, 11" ]
+	z06 [ pin = True, pos = "10, 12" ]
+	x06 [ pin = True, pos = "0, 12" ]
+	y06 [ pin = True, pos = "0, 13" ]
+	z07 [ pin = True, pos = "10, 14" ]
+	x07 [ pin = True, pos = "0, 14" ]
+	y07 [ pin = True, pos = "0, 15" ]
+	z08 [ pin = True, pos = "10, 16" ]
+	x08 [ pin = True, pos = "0, 16" ]
+	y08 [ pin = True, pos = "0, 17" ]
+	z09 [ pin = True, pos = "10, 18" ]
+	x09 [ pin = True, pos = "0, 18" ]
+	y09 [ pin = True, pos = "0, 19" ]
+	z10 [ pin = True, pos = "10, 20" ]
+	x10 [ pin = True, pos = "0, 20" ]
+	y10 [ pin = True, pos = "0, 21" ]
+	z11 [ pin = True, pos = "10, 22" ]
+	x11 [ pin = True, pos = "0, 22" ]
+	y11 [ pin = True, pos = "0, 23" ]
+	z12 [ pin = True, pos = "10, 24" ]
+	x12 [ pin = True, pos = "0, 24" ]
+	y12 [ pin = True, pos = "0, 25" ]
+	z13 [ pin = True, pos = "10, 26" ]
+	x13 [ pin = True, pos = "0, 26" ]
+	y13 [ pin = True, pos = "0, 27" ]
+	z14 [ pin = True, pos = "10, 28" ]
+	x14 [ pin = True, pos = "0, 28" ]
+	y14 [ pin = True, pos = "0, 29" ]
+	z15 [ pin = True, pos = "10, 30" ]
+	x15 [ pin = True, pos = "0, 30" ]
+	y15 [ pin = True, pos = "0, 31" ]
+	z16 [ pin = True, pos = "10, 32" ]
+	x16 [ pin = True, pos = "0, 32" ]
+	y16 [ pin = True, pos = "0, 33" ]
+	z17 [ pin = True, pos = "10, 34" ]
+	x17 [ pin = True, pos = "0, 34" ]
+	y17 [ pin = True, pos = "0, 35" ]
+	z18 [ pin = True, pos = "10, 36" ]
+	x18 [ pin = True, pos = "0, 36" ]
+	y18 [ pin = True, pos = "0, 37" ]
+	z19 [ pin = True, pos = "10, 38" ]
+	x19 [ pin = True, pos = "0, 38" ]
+	y19 [ pin = True, pos = "0, 39" ]
+	z20 [ pin = True, pos = "10, 40" ]
+	x20 [ pin = True, pos = "0, 40" ]
+	y20 [ pin = True, pos = "0, 41" ]
+	z21 [ pin = True, pos = "10, 42" ]
+	x21 [ pin = True, pos = "0, 42" ]
+	y21 [ pin = True, pos = "0, 43" ]
+	z22 [ pin = True, pos = "10, 44" ]
+	x22 [ pin = True, pos = "0, 44" ]
+	y22 [ pin = True, pos = "0, 45" ]
+	z23 [ pin = True, pos = "10, 46" ]
+	x23 [ pin = True, pos = "0, 46" ]
+	y23 [ pin = True, pos = "0, 47" ]
+	z24 [ pin = True, pos = "10, 48" ]
+	x24 [ pin = True, pos = "0, 48" ]
+	y24 [ pin = True, pos = "0, 49" ]
+	z25 [ pin = True, pos = "10, 50" ]
+	x25 [ pin = True, pos = "0, 50" ]
+	y25 [ pin = True, pos = "0, 51" ]
+	z26 [ pin = True, pos = "10, 52" ]
+	x26 [ pin = True, pos = "0, 52" ]
+	y26 [ pin = True, pos = "0, 53" ]
+	z27 [ pin = True, pos = "10, 54" ]
+	x27 [ pin = True, pos = "0, 54" ]
+	y27 [ pin = True, pos = "0, 55" ]
+	z28 [ pin = True, pos = "10, 56" ]
+	x28 [ pin = True, pos = "0, 56" ]
+	y28 [ pin = True, pos = "0, 57" ]
+	z29 [ pin = True, pos = "10, 58" ]
+	x29 [ pin = True, pos = "0, 58" ]
+	y29 [ pin = True, pos = "0, 59" ]
+	z30 [ pin = True, pos = "10, 60" ]
+	x30 [ pin = True, pos = "0, 60" ]
+	y30 [ pin = True, pos = "0, 61" ]
+	z31 [ pin = True, pos = "10, 62" ]
+	x31 [ pin = True, pos = "0, 62" ]
+	y31 [ pin = True, pos = "0, 63" ]
+	z32 [ pin = True, pos = "10, 64" ]
+	x32 [ pin = True, pos = "0, 64" ]
+	y32 [ pin = True, pos = "0, 65" ]
+	z33 [ pin = True, pos = "10, 66" ]
+	x33 [ pin = True, pos = "0, 66" ]
+	y33 [ pin = True, pos = "0, 67" ]
+	z34 [ pin = True, pos = "10, 68" ]
+	x34 [ pin = True, pos = "0, 68" ]
+	y34 [ pin = True, pos = "0, 69" ]
+	z35 [ pin = True, pos = "10, 70" ]
+	x35 [ pin = True, pos = "0, 70" ]
+	y35 [ pin = True, pos = "0, 71" ]
+	z36 [ pin = True, pos = "10, 72" ]
+	x36 [ pin = True, pos = "0, 72" ]
+	y36 [ pin = True, pos = "0, 73" ]
+	z37 [ pin = True, pos = "10, 74" ]
+	x37 [ pin = True, pos = "0, 74" ]
+	y37 [ pin = True, pos = "0, 75" ]
+	z38 [ pin = True, pos = "10, 76" ]
+	x38 [ pin = True, pos = "0, 76" ]
+	y38 [ pin = True, pos = "0, 77" ]
+	z39 [ pin = True, pos = "10, 78" ]
+	x39 [ pin = True, pos = "0, 78" ]
+	y39 [ pin = True, pos = "0, 79" ]
+	z40 [ pin = True, pos = "10, 80" ]
+	x40 [ pin = True, pos = "0, 80" ]
+	y40 [ pin = True, pos = "0, 81" ]
+	z41 [ pin = True, pos = "10, 82" ]
+	x41 [ pin = True, pos = "0, 82" ]
+	y41 [ pin = True, pos = "0, 83" ]
+	z42 [ pin = True, pos = "10, 84" ]
+	x42 [ pin = True, pos = "0, 84" ]
+	y42 [ pin = True, pos = "0, 85" ]
+	z43 [ pin = True, pos = "10, 86" ]
+	x43 [ pin = True, pos = "0, 86" ]
+	y43 [ pin = True, pos = "0, 87" ]
+	z44 [ pin = True, pos = "10, 88" ]
+	x44 [ pin = True, pos = "0, 88" ]
+	y44 [ pin = True, pos = "0, 89" ]
+	z45 [ pin = True, pos = "10, 90" ]
+	jdr -> z32 
+	z32 [ color = "red" ]
+	jdr -> bhw 
+	bhw [ color = "blue" ]
+	wvk -> z32 
+	z32 [ color = "red" ]
+	wvk -> bhw 
+	bhw [ color = "blue" ]
+	x06 -> vsv 
+	vsv [ color = "blue" ]
+	x06 -> npm 
+	npm [ color = "red" ]
+	y06 -> vsv 
+	vsv [ color = "blue" ]
+	y06 -> npm 
+	npm [ color = "red" ]
+	x32 -> dwn 
+	dwn [ color = "blue" ]
+	x32 -> wvk 
+	wvk [ color = "red" ]
+	y32 -> dwn 
+	dwn [ color = "blue" ]
+	y32 -> wvk 
+	wvk [ color = "red" ]
+	x40 -> ftm 
+	ftm [ color = "red" ]
+	x40 -> wcb 
+	wcb [ color = "blue" ]
+	y40 -> ftm 
+	ftm [ color = "red" ]
+	y40 -> wcb 
+	wcb [ color = "blue" ]
+	wcb -> vwj 
+	vwj [ color = "green" ]
+	mcn -> vwj 
+	vwj [ color = "green" ]
+	x14 -> vjc 
+	vjc [ color = "red" ]
+	x14 -> wkm 
+	wkm [ color = "blue" ]
+	y14 -> vjc 
+	vjc [ color = "red" ]
+	y14 -> wkm 
+	wkm [ color = "blue" ]
+	knj -> hvj 
+	hvj [ color = "green" ]
+	rtq -> hvj 
+	hvj [ color = "green" ]
+	scr -> cnw 
+	cnw [ color = "blue" ]
+	scr -> z29 
+	z29 [ color = "red" ]
+	fvs -> cnw 
+	cnw [ color = "blue" ]
+	fvs -> z29 
+	z29 [ color = "red" ]
+	vtk -> fbc 
+	fbc [ color = "green" ]
+	rcm -> fbc 
+	fbc [ color = "green" ]
+	y24 -> ftc 
+	ftc [ color = "red" ]
+	y24 -> rdj 
+	rdj [ color = "blue" ]
+	x24 -> ftc 
+	ftc [ color = "red" ]
+	x24 -> rdj 
+	rdj [ color = "blue" ]
+	vtc -> z28 
+	z28 [ color = "red" ]
+	vtc -> pkg 
+	pkg [ color = "blue" ]
+	cwm -> z28 
+	z28 [ color = "red" ]
+	cwm -> pkg 
+	pkg [ color = "blue" ]
+	vmc -> fqs 
+	fqs [ color = "green" ]
+	ffj -> fqs 
+	fqs [ color = "green" ]
+	dqd -> z08 
+	z08 [ color = "red" ]
+	dqd -> ffj 
+	ffj [ color = "blue" ]
+	dnn -> z08 
+	z08 [ color = "red" ]
+	dnn -> ffj 
+	ffj [ color = "blue" ]
+	spp -> z23 
+	z23 [ color = "red" ]
+	spp -> vsq 
+	vsq [ color = "blue" ]
+	qtk -> z23 
+	z23 [ color = "red" ]
+	qtk -> vsq 
+	vsq [ color = "blue" ]
+	rmm -> z10 
+	z10 [ color = "red" ]
+	rmm -> qdq 
+	qdq [ color = "blue" ]
+	hvj -> z10 
+	z10 [ color = "red" ]
+	hvj -> qdq 
+	qdq [ color = "blue" ]
+	gvh -> hdb 
+	hdb [ color = "green" ]
+	fbh -> hdb 
+	hdb [ color = "green" ]
+	nrv -> mcn 
+	mcn [ color = "blue" ]
+	nrv -> z40 
+	z40 [ color = "red" ]
+	ftm -> mcn 
+	mcn [ color = "blue" ]
+	ftm -> z40 
+	z40 [ color = "red" ]
+	y29 -> gnc 
+	gnc [ color = "blue" ]
+	y29 -> fvs 
+	fvs [ color = "red" ]
+	x29 -> gnc 
+	gnc [ color = "blue" ]
+	x29 -> fvs 
+	fvs [ color = "red" ]
+	gtq -> gpf 
+	gpf [ color = "blue" ]
+	gtq -> z06 
+	z06 [ color = "red" ]
+	npm -> gpf 
+	gpf [ color = "blue" ]
+	npm -> z06 
+	z06 [ color = "red" ]
+	y22 -> hgq 
+	hgq [ color = "red" ]
+	y22 -> gjh 
+	gjh [ color = "blue" ]
+	x22 -> hgq 
+	hgq [ color = "red" ]
+	x22 -> gjh 
+	gjh [ color = "blue" ]
+	fpw -> sff 
+	sff [ color = "green" ]
+	vsw -> sff 
+	sff [ color = "green" ]
+	pnm -> mkg 
+	mkg [ color = "green" ]
+	tpn -> mkg 
+	mkg [ color = "green" ]
+	y16 -> chg 
+	chg [ color = "blue" ]
+	y16 -> fwp 
+	fwp [ color = "red" ]
+	x16 -> chg 
+	chg [ color = "blue" ]
+	x16 -> fwp 
+	fwp [ color = "red" ]
+	x43 -> qjh 
+	qjh [ color = "red" ]
+	x43 -> tsb 
+	tsb [ color = "blue" ]
+	y43 -> qjh 
+	qjh [ color = "red" ]
+	y43 -> tsb 
+	tsb [ color = "blue" ]
+	jqn -> hkc 
+	hkc [ color = "green" ]
+	jjv -> hkc 
+	hkc [ color = "green" ]
+	gbr -> smt 
+	smt [ color = "green" ]
+	nrs -> smt 
+	smt [ color = "green" ]
+	x07 -> jmm 
+	jmm [ color = "blue" ]
+	x07 -> dvd 
+	dvd [ color = "red" ]
+	y07 -> jmm 
+	jmm [ color = "blue" ]
+	y07 -> dvd 
+	dvd [ color = "red" ]
+	nnm -> tgh 
+	tgh [ color = "blue" ]
+	nnm -> z11 
+	z11 [ color = "red" ]
+	dcs -> tgh 
+	tgh [ color = "blue" ]
+	dcs -> z11 
+	z11 [ color = "red" ]
+	kvw -> bdq 
+	bdq [ color = "blue" ]
+	kvw -> z35 
+	z35 [ color = "red" ]
+	hsn -> bdq 
+	bdq [ color = "blue" ]
+	hsn -> z35 
+	z35 [ color = "red" ]
+	mpb -> rwv 
+	rwv [ color = "green" ]
+	kdc -> rwv 
+	rwv [ color = "green" ]
+	mvh -> z18 
+	z18 [ color = "red" ]
+	mvh -> fpw 
+	fpw [ color = "blue" ]
+	mkg -> z18 
+	z18 [ color = "red" ]
+	mkg -> fpw 
+	fpw [ color = "blue" ]
+	rwq -> pvs 
+	pvs [ color = "green" ]
+	kbg -> pvs 
+	pvs [ color = "green" ]
+	x23 -> mkf 
+	mkf [ color = "blue" ]
+	x23 -> qtk 
+	qtk [ color = "red" ]
+	y23 -> mkf 
+	mkf [ color = "blue" ]
+	y23 -> qtk 
+	qtk [ color = "red" ]
+	y38 -> psb 
+	psb [ color = "red" ]
+	y38 -> tbh 
+	tbh [ color = "blue" ]
+	x38 -> psb 
+	psb [ color = "red" ]
+	x38 -> tbh 
+	tbh [ color = "blue" ]
+	fwp -> gbb 
+	gbb [ color = "blue" ]
+	fwp -> z16 
+	z16 [ color = "red" ]
+	phm -> gbb 
+	gbb [ color = "blue" ]
+	phm -> z16 
+	z16 [ color = "red" ]
+	y17 -> wdm 
+	wdm [ color = "red" ]
+	y17 -> tpn 
+	tpn [ color = "blue" ]
+	x17 -> wdm 
+	wdm [ color = "red" ]
+	x17 -> tpn 
+	tpn [ color = "blue" ]
+	sff -> z19 
+	z19 [ color = "red" ]
+	sff -> dnc 
+	dnc [ color = "blue" ]
+	wkd -> z19 
+	z19 [ color = "red" ]
+	wkd -> dnc 
+	dnc [ color = "blue" ]
+	y35 -> hsn 
+	hsn [ color = "red" ]
+	y35 -> jss 
+	jss [ color = "blue" ]
+	x35 -> hsn 
+	hsn [ color = "red" ]
+	x35 -> jss 
+	jss [ color = "blue" ]
+	sqw -> rkt 
+	rkt [ color = "green" ]
+	fnj -> rkt 
+	rkt [ color = "green" ]
+	pgt -> jbd 
+	jbd [ color = "blue" ]
+	pgt -> z22 
+	z22 [ color = "red" ]
+	hgq -> jbd 
+	jbd [ color = "blue" ]
+	hgq -> z22 
+	z22 [ color = "red" ]
+	wps -> vtc 
+	vtc [ color = "green" ]
+	fhw -> vtc 
+	vtc [ color = "green" ]
+	x42 -> gvh 
+	gvh [ color = "blue" ]
+	x42 -> qjw 
+	qjw [ color = "red" ]
+	y42 -> gvh 
+	gvh [ color = "blue" ]
+	y42 -> qjw 
+	qjw [ color = "red" ]
+	qjw -> z42 
+	z42 [ color = "red" ]
+	qjw -> fbh 
+	fbh [ color = "blue" ]
+	smt -> z42 
+	z42 [ color = "red" ]
+	smt -> fbh 
+	fbh [ color = "blue" ]
+	nsj -> nnm 
+	nnm [ color = "green" ]
+	qdq -> nnm 
+	nnm [ color = "green" ]
+	x02 -> vht 
+	vht [ color = "blue" ]
+	x02 -> vbf 
+	vbf [ color = "red" ]
+	y02 -> vht 
+	vht [ color = "blue" ]
+	y02 -> vbf 
+	vbf [ color = "red" ]
+	fjr -> hdc 
+	hdc [ color = "blue" ]
+	fjr -> z36 
+	z36 [ color = "red" ]
+	ndm -> hdc 
+	hdc [ color = "blue" ]
+	ndm -> z36 
+	z36 [ color = "red" ]
+	vsq -> hrv 
+	hrv [ color = "green" ]
+	mkf -> hrv 
+	hrv [ color = "green" ]
+	grh -> nrv 
+	nrv [ color = "green" ]
+	bbk -> nrv 
+	nrv [ color = "green" ]
+	qjr -> vsb 
+	vsb [ color = "green" ]
+	vvj -> vsb 
+	vsb [ color = "green" ]
+	fjh -> z39 
+	z39 [ color = "red" ]
+	fjh -> bbk 
+	bbk [ color = "blue" ]
+	kfr -> z39 
+	z39 [ color = "red" ]
+	kfr -> bbk 
+	bbk [ color = "blue" ]
+	rbj -> hbj 
+	hbj [ color = "blue" ]
+	rbj -> z33 
+	z33 [ color = "red" ]
+	jfc -> hbj 
+	hbj [ color = "blue" ]
+	jfc -> z33 
+	z33 [ color = "red" ]
+	jbd -> spp 
+	spp [ color = "green" ]
+	gjh -> spp 
+	spp [ color = "green" ]
+	vsb -> fcv 
+	fcv [ color = "blue" ]
+	vsb -> z04 
+	z04 [ color = "red" ]
+	ktw -> fcv 
+	fcv [ color = "blue" ]
+	ktw -> z04 
+	z04 [ color = "red" ]
+	jhk -> cnt 
+	cnt [ color = "green" ]
+	nvd -> cnt 
+	cnt [ color = "green" ]
+	dwp -> knt 
+	knt [ color = "blue" ]
+	dwp -> z15 
+	z15 [ color = "red" ]
+	tpr -> knt 
+	knt [ color = "blue" ]
+	tpr -> z15 
+	z15 [ color = "red" ]
+	x36 -> pmp 
+	pmp [ color = "blue" ]
+	x36 -> fjr 
+	fjr [ color = "red" ]
+	y36 -> pmp 
+	pmp [ color = "blue" ]
+	y36 -> fjr 
+	fjr [ color = "red" ]
+	y39 -> kfr 
+	kfr [ color = "red" ]
+	y39 -> grh 
+	grh [ color = "blue" ]
+	x39 -> kfr 
+	kfr [ color = "red" ]
+	x39 -> grh 
+	grh [ color = "blue" ]
+	bcb -> tqb 
+	tqb [ color = "blue" ]
+	bcb -> z34 
+	z34 [ color = "red" ]
+	qps -> tqb 
+	tqb [ color = "blue" ]
+	qps -> z34 
+	z34 [ color = "red" ]
+	ggt -> z41 
+	z41 [ color = "red" ]
+	ggt -> nrs 
+	nrs [ color = "blue" ]
+	vwj -> z41 
+	z41 [ color = "red" ]
+	vwj -> nrs 
+	nrs [ color = "blue" ]
+	y05 -> grd 
+	grd [ color = "blue" ]
+	y05 -> fpp 
+	fpp [ color = "red" ]
+	x05 -> grd 
+	grd [ color = "blue" ]
+	x05 -> fpp 
+	fpp [ color = "red" ]
+	str -> scr 
+	scr [ color = "green" ]
+	pkg -> scr 
+	scr [ color = "green" ]
+	x31 -> ctt 
+	ctt [ color = "blue" ]
+	x31 -> rns 
+	rns [ color = "red" ]
+	y31 -> ctt 
+	ctt [ color = "blue" ]
+	y31 -> rns 
+	rns [ color = "red" ]
+	rkt -> z14 
+	z14 [ color = "red" ]
+	rkt -> pwq 
+	pwq [ color = "blue" ]
+	vjc -> z14 
+	z14 [ color = "red" ]
+	vjc -> pwq 
+	pwq [ color = "blue" ]
+	fpp -> z05 
+	z05 [ color = "red" ]
+	fpp -> bqn 
+	bqn [ color = "blue" ]
+	jfn -> z05 
+	z05 [ color = "red" ]
+	jfn -> bqn 
+	bqn [ color = "blue" ]
+	grd -> gtq 
+	gtq [ color = "green" ]
+	bqn -> gtq 
+	gtq [ color = "green" ]
+	dhr -> z17 
+	z17 [ color = "red" ]
+	dhr -> pnm 
+	pnm [ color = "blue" ]
+	wdm -> z17 
+	z17 [ color = "red" ]
+	wdm -> pnm 
+	pnm [ color = "blue" ]
+	x25 -> hds 
+	hds [ color = "red" ]
+	x25 -> mtt 
+	mtt [ color = "blue" ]
+	y25 -> hds 
+	hds [ color = "red" ]
+	y25 -> mtt 
+	mtt [ color = "blue" ]
+	x34 -> jjd 
+	jjd [ color = "blue" ]
+	x34 -> bcb 
+	bcb [ color = "red" ]
+	y34 -> jjd 
+	jjd [ color = "blue" ]
+	y34 -> bcb 
+	bcb [ color = "red" ]
+	gpt -> z27 
+	z27 [ color = "red" ]
+	gpt -> wps 
+	wps [ color = "blue" ]
+	hkc -> z27 
+	z27 [ color = "red" ]
+	hkc -> wps 
+	wps [ color = "blue" ]
+	scm -> pgt 
+	pgt [ color = "green" ]
+	pcj -> pgt 
+	pgt [ color = "green" ]
+	scw -> wqq 
+	wqq [ color = "green" ]
+	dnc -> wqq 
+	wqq [ color = "green" ]
+	x41 -> gbr 
+	gbr [ color = "blue" ]
+	x41 -> ggt 
+	ggt [ color = "red" ]
+	y41 -> gbr 
+	gbr [ color = "blue" ]
+	y41 -> ggt 
+	ggt [ color = "red" ]
+	pvs -> z21 
+	z21 [ color = "red" ]
+	pvs -> pcj 
+	pcj [ color = "blue" ]
+	ccd -> z21 
+	z21 [ color = "red" ]
+	ccd -> pcj 
+	pcj [ color = "blue" ]
+	x30 -> dqc 
+	dqc [ color = "blue" ]
+	x30 -> tnd 
+	tnd [ color = "red" ]
+	y30 -> dqc 
+	dqc [ color = "blue" ]
+	y30 -> tnd 
+	tnd [ color = "red" ]
+	tsb -> trn 
+	trn [ color = "green" ]
+	kcj -> trn 
+	trn [ color = "green" ]
+	rns -> vhw 
+	vhw [ color = "blue" ]
+	rns -> z31 
+	z31 [ color = "red" ]
+	hnn -> vhw 
+	vhw [ color = "blue" ]
+	hnn -> z31 
+	z31 [ color = "red" ]
+	hrv -> z24 
+	z24 [ color = "red" ]
+	hrv -> wwp 
+	wwp [ color = "blue" ]
+	ftc -> z24 
+	z24 [ color = "red" ]
+	ftc -> wwp 
+	wwp [ color = "blue" ]
+	fbc -> z02 
+	z02 [ color = "red" ]
+	fbc -> prd 
+	prd [ color = "blue" ]
+	vbf -> z02 
+	z02 [ color = "red" ]
+	vbf -> prd 
+	prd [ color = "blue" ]
+	hbj -> qps 
+	qps [ color = "green" ]
+	rrn -> qps 
+	qps [ color = "green" ]
+	tnd -> z30 
+	z30 [ color = "red" ]
+	tnd -> cns 
+	cns [ color = "blue" ]
+	hhk -> z30 
+	z30 [ color = "red" ]
+	hhk -> cns 
+	cns [ color = "blue" ]
+	x19 -> wkd 
+	wkd [ color = "red" ]
+	x19 -> scw 
+	scw [ color = "blue" ]
+	y19 -> wkd 
+	wkd [ color = "red" ]
+	y19 -> scw 
+	scw [ color = "blue" ]
+	y01 -> kgc 
+	kgc [ color = "red" ]
+	y01 -> rcm 
+	rcm [ color = "blue" ]
+	x01 -> kgc 
+	kgc [ color = "red" ]
+	x01 -> rcm 
+	rcm [ color = "blue" ]
+	dvd -> ckq 
+	ckq [ color = "blue" ]
+	dvd -> z07 
+	z07 [ color = "red" ]
+	wqm -> ckq 
+	ckq [ color = "blue" ]
+	wqm -> z07 
+	z07 [ color = "red" ]
+	jrb -> z12 
+	z12 [ color = "red" ]
+	jrb -> jhk 
+	jhk [ color = "blue" ]
+	jjp -> z12 
+	z12 [ color = "red" ]
+	jjp -> jhk 
+	jhk [ color = "blue" ]
+	x08 -> dqd 
+	dqd [ color = "red" ]
+	x08 -> vmc 
+	vmc [ color = "blue" ]
+	y08 -> dqd 
+	dqd [ color = "red" ]
+	y08 -> vmc 
+	vmc [ color = "blue" ]
+	wkm -> tpr 
+	tpr [ color = "green" ]
+	pwq -> tpr 
+	tpr [ color = "green" ]
+	prd -> sfh 
+	sfh [ color = "green" ]
+	vht -> sfh 
+	sfh [ color = "green" ]
+	fcv -> jfn 
+	jfn [ color = "green" ]
+	pkw -> jfn 
+	jfn [ color = "green" ]
+	jss -> ndm 
+	ndm [ color = "green" ]
+	bdq -> ndm 
+	ndm [ color = "green" ]
+	y09 -> rtq 
+	rtq [ color = "blue" ]
+	y09 -> sbs 
+	sbs [ color = "red" ]
+	x09 -> rtq 
+	rtq [ color = "blue" ]
+	x09 -> sbs 
+	sbs [ color = "red" ]
+	y00 -> z00 
+	z00 [ color = "red" ]
+	y00 -> rvh 
+	rvh [ color = "blue" ]
+	x00 -> z00 
+	z00 [ color = "red" ]
+	x00 -> rvh 
+	rvh [ color = "blue" ]
+	x33 -> jfc 
+	jfc [ color = "red" ]
+	x33 -> rrn 
+	rrn [ color = "blue" ]
+	y33 -> jfc 
+	jfc [ color = "red" ]
+	y33 -> rrn 
+	rrn [ color = "blue" ]
+	x04 -> ktw 
+	ktw [ color = "red" ]
+	x04 -> pkw 
+	pkw [ color = "blue" ]
+	y04 -> ktw 
+	ktw [ color = "red" ]
+	y04 -> pkw 
+	pkw [ color = "blue" ]
+	x44 -> rbs 
+	rbs [ color = "blue" ]
+	x44 -> vsk 
+	vsk [ color = "red" ]
+	y44 -> rbs 
+	rbs [ color = "blue" ]
+	y44 -> vsk 
+	vsk [ color = "red" ]
+	x10 -> nsj 
+	nsj [ color = "blue" ]
+	x10 -> rmm 
+	rmm [ color = "red" ]
+	y10 -> nsj 
+	nsj [ color = "blue" ]
+	y10 -> rmm 
+	rmm [ color = "red" ]
+	jfm -> z26 
+	z26 [ color = "red" ]
+	jfm -> jqn 
+	jqn [ color = "blue" ]
+	ssc -> z26 
+	z26 [ color = "red" ]
+	ssc -> jqn 
+	jqn [ color = "blue" ]
+	bcj -> gtn 
+	gtn [ color = "blue" ]
+	bcj -> z25 
+	z25 [ color = "red" ]
+	hds -> gtn 
+	gtn [ color = "blue" ]
+	hds -> z25 
+	z25 [ color = "red" ]
+	rbs -> z45 
+	z45 [ color = "green" ]
+	rvg -> z45 
+	z45 [ color = "green" ]
+	y13 -> sqw 
+	sqw [ color = "blue" ]
+	y13 -> vnw 
+	vnw [ color = "red" ]
+	x13 -> sqw 
+	sqw [ color = "blue" ]
+	x13 -> vnw 
+	vnw [ color = "red" ]
+	jjd -> kvw 
+	kvw [ color = "green" ]
+	tqb -> kvw 
+	kvw [ color = "green" ]
+	rvh -> z01 
+	z01 [ color = "red" ]
+	rvh -> vtk 
+	vtk [ color = "blue" ]
+	kgc -> z01 
+	z01 [ color = "red" ]
+	kgc -> vtk 
+	vtk [ color = "blue" ]
+	x15 -> kfm 
+	kfm [ color = "blue" ]
+	x15 -> dwp 
+	dwp [ color = "red" ]
+	y15 -> kfm 
+	kfm [ color = "blue" ]
+	y15 -> dwp 
+	dwp [ color = "red" ]
+	x11 -> dcs 
+	dcs [ color = "red" ]
+	x11 -> ngf 
+	ngf [ color = "blue" ]
+	y11 -> dcs 
+	dcs [ color = "red" ]
+	y11 -> ngf 
+	ngf [ color = "blue" ]
+	sqc -> z37 
+	z37 [ color = "red" ]
+	sqc -> kdc 
+	kdc [ color = "blue" ]
+	chd -> z37 
+	z37 [ color = "red" ]
+	chd -> kdc 
+	kdc [ color = "blue" ]
+	hdb -> kcj 
+	kcj [ color = "blue" ]
+	hdb -> z43 
+	z43 [ color = "red" ]
+	qjh -> kcj 
+	kcj [ color = "blue" ]
+	qjh -> z43 
+	z43 [ color = "red" ]
+	x37 -> chd 
+	chd [ color = "red" ]
+	x37 -> mpb 
+	mpb [ color = "blue" ]
+	y37 -> chd 
+	chd [ color = "red" ]
+	y37 -> mpb 
+	mpb [ color = "blue" ]
+	vsv -> wqm 
+	wqm [ color = "green" ]
+	gpf -> wqm 
+	wqm [ color = "green" ]
+	kbp -> z03 
+	z03 [ color = "red" ]
+	kbp -> qjr 
+	qjr [ color = "blue" ]
+	sfh -> z03 
+	z03 [ color = "red" ]
+	sfh -> qjr 
+	qjr [ color = "blue" ]
+	x26 -> jfm 
+	jfm [ color = "red" ]
+	x26 -> jjv 
+	jjv [ color = "blue" ]
+	y26 -> jfm 
+	jfm [ color = "red" ]
+	y26 -> jjv 
+	jjv [ color = "blue" ]
+	x12 -> nvd 
+	nvd [ color = "blue" ]
+	x12 -> jrb 
+	jrb [ color = "red" ]
+	y12 -> nvd 
+	nvd [ color = "blue" ]
+	y12 -> jrb 
+	jrb [ color = "red" ]
+	cnt -> fnj 
+	fnj [ color = "blue" ]
+	cnt -> z13 
+	z13 [ color = "red" ]
+	vnw -> fnj 
+	fnj [ color = "blue" ]
+	vnw -> z13 
+	z13 [ color = "red" ]
+	trn -> z44 
+	z44 [ color = "red" ]
+	trn -> rvg 
+	rvg [ color = "blue" ]
+	vsk -> z44 
+	z44 [ color = "red" ]
+	vsk -> rvg 
+	rvg [ color = "blue" ]
+	x20 -> rwq 
+	rwq [ color = "blue" ]
+	x20 -> vbh 
+	vbh [ color = "red" ]
+	y20 -> rwq 
+	rwq [ color = "blue" ]
+	y20 -> vbh 
+	vbh [ color = "red" ]
+	sbs -> knj 
+	knj [ color = "blue" ]
+	sbs -> z09 
+	z09 [ color = "red" ]
+	fqs -> knj 
+	knj [ color = "blue" ]
+	fqs -> z09 
+	z09 [ color = "red" ]
+	x03 -> kbp 
+	kbp [ color = "red" ]
+	x03 -> vvj 
+	vvj [ color = "blue" ]
+	y03 -> kbp 
+	kbp [ color = "red" ]
+	y03 -> vvj 
+	vvj [ color = "blue" ]
+	psb -> jth 
+	jth [ color = "blue" ]
+	psb -> z38 
+	z38 [ color = "red" ]
+	rwv -> jth 
+	jth [ color = "blue" ]
+	rwv -> z38 
+	z38 [ color = "red" ]
+	ctt -> jdr 
+	jdr [ color = "green" ]
+	vhw -> jdr 
+	jdr [ color = "green" ]
+	gbb -> dhr 
+	dhr [ color = "green" ]
+	chg -> dhr 
+	dhr [ color = "green" ]
+	jth -> fjh 
+	fjh [ color = "green" ]
+	tbh -> fjh 
+	fjh [ color = "green" ]
+	x18 -> vsw 
+	vsw [ color = "blue" ]
+	x18 -> mvh 
+	mvh [ color = "red" ]
+	y18 -> vsw 
+	vsw [ color = "blue" ]
+	y18 -> mvh 
+	mvh [ color = "red" ]
+	x27 -> fhw 
+	fhw [ color = "blue" ]
+	x27 -> gpt 
+	gpt [ color = "red" ]
+	y27 -> fhw 
+	fhw [ color = "blue" ]
+	y27 -> gpt 
+	gpt [ color = "red" ]
+	x28 -> str 
+	str [ color = "blue" ]
+	x28 -> cwm 
+	cwm [ color = "red" ]
+	y28 -> str 
+	str [ color = "blue" ]
+	y28 -> cwm 
+	cwm [ color = "red" ]
+	gnc -> hhk 
+	hhk [ color = "green" ]
+	cnw -> hhk 
+	hhk [ color = "green" ]
+	tgh -> jjp 
+	jjp [ color = "green" ]
+	ngf -> jjp 
+	jjp [ color = "green" ]
+	mtt -> ssc 
+	ssc [ color = "green" ]
+	gtn -> ssc 
+	ssc [ color = "green" ]
+	x21 -> ccd 
+	ccd [ color = "red" ]
+	x21 -> scm 
+	scm [ color = "blue" ]
+	y21 -> ccd 
+	ccd [ color = "red" ]
+	y21 -> scm 
+	scm [ color = "blue" ]
+	pmp -> sqc 
+	sqc [ color = "green" ]
+	hdc -> sqc 
+	sqc [ color = "green" ]
+	kfm -> phm 
+	phm [ color = "green" ]
+	knt -> phm 
+	phm [ color = "green" ]
+	vbh -> z20 
+	z20 [ color = "red" ]
+	vbh -> kbg 
+	kbg [ color = "blue" ]
+	wqq -> z20 
+	z20 [ color = "red" ]
+	wqq -> kbg 
+	kbg [ color = "blue" ]
+	bhw -> rbj 
+	rbj [ color = "green" ]
+	dwn -> rbj 
+	rbj [ color = "green" ]
+	wwp -> bcj 
+	bcj [ color = "green" ]
+	rdj -> bcj 
+	bcj [ color = "green" ]
+	jmm -> dnn 
+	dnn [ color = "green" ]
+	ckq -> dnn 
+	dnn [ color = "green" ]
+	cns -> hnn 
+	hnn [ color = "green" ]
+	dqc -> hnn 
+	hnn [ color = "green" ]
+}

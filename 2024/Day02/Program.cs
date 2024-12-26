@@ -50,9 +50,6 @@ bool IsSafeWithDampener(int[] report)
 {
     bool isSafe = IsSafe(report);
 
-    // TODO: Improve performance by being smarter in IsSafe and not actually
-    // trying all the variants explicitely.
-
     if (!isSafe)
     {
         foreach (var index in Enumerable.Range(0, report.Length))

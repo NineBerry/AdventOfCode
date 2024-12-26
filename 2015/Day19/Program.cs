@@ -1,4 +1,4 @@
-﻿#define Sample
+﻿//#define Sample
 
 {
 
@@ -27,7 +27,7 @@ long Part1(string originalMolecule, Replacement[] replacements)
 
 long Part2(string targetMolecule, Replacement[] replacements)
 {
-    HashSet<string> seen = new HashSet<string>();
+    HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
     replacements = replacements.Select(re => new Replacement(re.To, re.From)).ToArray();
 
     DateTime start = DateTime.Now;
@@ -50,7 +50,7 @@ int ReduceTo (string molecule, string reduceTo, int steps, Replacement[] replace
     {
         foreach (var replacement in replacements)
         {
-            if (molecule.Substring(i).StartsWith(replacement.From))
+            if (molecule.Substring(i).StartsWith(replacement.From, StringComparison.Ordinal))
             {
                 string newMolecule =
                       molecule.Substring(0, i)

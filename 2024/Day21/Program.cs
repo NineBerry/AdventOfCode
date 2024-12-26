@@ -75,6 +75,7 @@ class FasterSpaceship
 
     private long GetSequenceCost(string sequence, int level)
     {
+        // Sequences always start at A
         var movements = ('A' + sequence).Zip(sequence);
 
         long cost = 0;
@@ -90,6 +91,7 @@ class FasterSpaceship
 
     private long GetCost(char from, char to, int level)
     {
+        if (from == to) return 0;
         if (level == 0) return 0;
 
         if(CostCache.TryGetValue((from, to, level), out var cached))

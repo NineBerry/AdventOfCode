@@ -1,6 +1,5 @@
-﻿#define Sample
+﻿// #define Sample
 
-using System.ComponentModel;
 using System.Text.RegularExpressions;
 
 {
@@ -16,14 +15,9 @@ using System.Text.RegularExpressions;
     Universe universe = new Universe(input);
     universe.Unify();
 
-    Console.WriteLine("Part 1: " + Part1(universe));
-    // Console.WriteLine("Part 2: " + Part2());
+    Console.WriteLine("Part 1: " + universe.GetAllBeaconsCount());
+    Console.WriteLine("Part 2: " + universe.GetMaxScannerDistance());
     Console.ReadLine();
-}
-
-long Part1(Universe universe)
-{
-    return -1;
 }
 
 class Universe
@@ -32,8 +26,12 @@ class Universe
 
     public Universe(string input)
     {
-        Scanners = input.ReplaceLineEndings(Environment.NewLine).Split(Environment.NewLine + Environment.NewLine).Select(s => new Scanner(s)).ToArray();
-
+        Scanners = 
+            input
+            .ReplaceLineEndings(Environment.NewLine)
+            .Split(Environment.NewLine + Environment.NewLine)
+            .Select(s => new Scanner(s))
+            .ToArray();
     }
 
     public void Unify()
@@ -46,6 +44,66 @@ class Universe
             }
         }
     }
+
+    public Point TranslateToZero(Point point, int fromScannerNumber)
+    {
+        Point? found = TranslateRecursive(point, fromScannerNumber, []);
+
+        if (found == null) throw new Exception("Could not translate");
+
+        return found;
+    }
+
+    private Point? TranslateRecursive(Point point, int fromScannerNumber, int[] seen)
+    {
+        if (fromScannerNumber == 0) return point;
+        if (seen.Contains(fromScannerNumber)) return null;
+
+        var fromScanner = Scanners.Where(s => s.Number == fromScannerNumber).Single();
+
+        foreach (var targetScanner in fromScanner.Translations.Keys)
+        {
+            var currentPoint = fromScanner.Translate(point, targetScanner);
+            var result = TranslateRecursive(currentPoint, targetScanner, [.. seen, fromScannerNumber]);
+
+            if (result != null) return result;
+        }
+
+        return null;
+    }
+
+
+    public long GetAllBeaconsCount()
+    {
+        HashSet<Point> beacons = [];
+
+        foreach (var scanner in Scanners)
+        {
+            foreach (var beacon in scanner.OriginalPoints)
+            {
+                beacons.Add(TranslateToZero(beacon, scanner.Number));
+            }
+        }
+
+        return beacons.Count;
+    }
+
+    public long GetMaxScannerDistance()
+    {
+        Point[] allScanners = Scanners.Select(s => TranslateToZero(new Point(0,0,0), s.Number)).ToArray();
+
+        long maxDistance = 0;
+
+        foreach(var scanner in allScanners)
+        {
+            foreach (var scanner2 in allScanners)
+            {
+                maxDistance = Math.Max(maxDistance, scanner.GetManhattanDistance(scanner2));
+            }
+        }
+
+        return maxDistance;
+    }
 }
 
 class Scanner
@@ -53,7 +111,7 @@ class Scanner
     public int Number;
     public Point[] OriginalPoints;
     public DistanceInformation[] DistanceInformation;
-    private Dictionary<int, FormulaComponent[]> Formulas = [];
+    public Dictionary<int, TranslationsInformation> Translations = [];
 
     public Scanner(string input)
     {
@@ -73,7 +131,7 @@ class Scanner
         DistanceInformation = distanceInformationList.ToArray();
     }
 
-    internal void TryMatchWith(Scanner otherScanner)
+    public void TryMatchWith(Scanner otherScanner)
     {
         foreach (var point in OriginalPoints)
         {
@@ -92,43 +150,24 @@ class Scanner
         if (elevenerPoints.Any())
         {
             Point matchingPoint = elevenerPoints.Single().First();
-            // Console.WriteLine($"{point} matches {matchingPoint}");
-
 
             // Find first difference with unique components
             DistanceInformation otherUniqueComonentsDifference = matching.First(d => d.HasUniqueComponents);
-            DistanceInformation thisUniqueComonentsDifference = 
+            DistanceInformation thisUniqueComonentsDifference =
                 DistanceInformation
                 .Where(d => (d.FirstPoint == point || d.SecondPoint == point) && d.CanonicalForm == otherUniqueComonentsDifference.CanonicalForm)
                 .Single();
 
 
-            // TODO: Get Translation information in both directions
-            /// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            /// And then store in both scanners
+            if (matching.Count(d => d.CanonicalForm == otherUniqueComonentsDifference.CanonicalForm) > 1) throw new Exception("Not unique");
+            if (DistanceInformation.Count(d => d.CanonicalForm == otherUniqueComonentsDifference.CanonicalForm) > 1) throw new Exception("Not unique");
 
+            var translation = CalculateTranslationInformation(this, otherScanner, point, matchingPoint, thisUniqueComonentsDifference, otherUniqueComonentsDifference);
+            var reverseTranslation = CalculateTranslationInformation(otherScanner, this, matchingPoint, point, otherUniqueComonentsDifference, thisUniqueComonentsDifference);
 
-            // Then calculate the formula between the two orientations
-            FormulaComponent[] orientationFormula = CalculateOrientationFormula(otherUniqueComonentsDifference.OriginalDistance, thisUniqueComonentsDifference.OriginalDistance);
-
-            // Then calculate the formula between the two scanners
-
-            Point otherPointRelativeToThis = ApplyOrientationFormula(matchingPoint, orientationFormula);
-            // Console.WriteLine($"Other point relative to this: {otherPointRelativeToThis}");
-
-
-            
-
-            if ((otherUniqueComonentsDifference.FirstPoint == matchingPoint && thisUniqueComonentsDifference.SecondPoint != point) ||
-                (otherUniqueComonentsDifference.SecondPoint == matchingPoint && thisUniqueComonentsDifference.FirstPoint != point))
-            {
-                otherPointRelativeToThis = otherPointRelativeToThis.MulMinus1();
-            }
-            
-            Point otherScannerRelativeToThis = point.Add(otherPointRelativeToThis);
-            Console.WriteLine($"{otherUniqueComonentsDifference.CanonicalForm} Other Scanner {otherScanner.Number} relative to this {this.Number}: {otherScannerRelativeToThis}");
-
-            // Then store formular in scanner and return true
+            // Then store translation information in scanner 
+            Translations[otherScanner.Number] = reverseTranslation;
+            otherScanner.Translations[Number] = translation;
 
             return true;
         }
@@ -136,9 +175,28 @@ class Scanner
         return false;
     }
 
-
-    private FormulaComponent[] CalculateOrientationFormula(Point from, Point to)
+    private TranslationsInformation CalculateTranslationInformation(Scanner thisScanner, Scanner otherScanner, Point point, Point matchingPoint, DistanceInformation thisUniqueComonentsDifference, DistanceInformation otherUniqueComonentsDifference)
     {
+        bool reverseOrder = false;
+        if ((otherUniqueComonentsDifference.FirstPoint == matchingPoint && thisUniqueComonentsDifference.SecondPoint != point) 
+            || (otherUniqueComonentsDifference.SecondPoint == matchingPoint && thisUniqueComonentsDifference.FirstPoint != point))
+        {
+            reverseOrder = true;
+        }
+
+        // Then calculate the formula between the two orientations
+        FormulaComponent[] orientationFormula = CalculateOrientationFormula(otherUniqueComonentsDifference.OriginalDistance, thisUniqueComonentsDifference.OriginalDistance, reverseOrder);
+
+        // Then calculate the formula between the two scanners
+        Point otherPointRelativeToThis = ApplyOrientationFormula(matchingPoint, orientationFormula);
+        Point otherScannerRelativeToThis = point.Add(otherPointRelativeToThis);
+
+        return new TranslationsInformation(otherScannerRelativeToThis, orientationFormula);
+    }
+
+    private FormulaComponent[] CalculateOrientationFormula(Point from, Point to, bool reverseOrder)
+    {
+        int factor = reverseOrder ? -1 : 1;
         FormulaComponent[] result = new FormulaComponent[3];
         result[0] = FindComponent(to.X);
         result[1] = FindComponent(to.Y);
@@ -148,9 +206,9 @@ class Scanner
 
         FormulaComponent FindComponent(int value)
         {
-            if(Math.Abs(value) == Math.Abs(from.X)) return new FormulaComponent(Dimension.X, value / from.X);
-            if (Math.Abs(value) == Math.Abs(from.Y)) return new FormulaComponent(Dimension.Y, value / from.Y);
-            if (Math.Abs(value) == Math.Abs(from.Z)) return new FormulaComponent(Dimension.Z, value / from.Z);
+            if (Math.Abs(value) == Math.Abs(from.X)) return new FormulaComponent(Dimension.X, factor * value / from.X);
+            if (Math.Abs(value) == Math.Abs(from.Y)) return new FormulaComponent(Dimension.Y, factor * value / from.Y);
+            if (Math.Abs(value) == Math.Abs(from.Z)) return new FormulaComponent(Dimension.Z, factor * value / from.Z);
 
             throw new Exception("Could not find component");
         }
@@ -171,19 +229,39 @@ class Scanner
                 Dimension.X => from.X,
                 Dimension.Y => from.Y,
                 Dimension.Z => from.Z,
+                _ => throw new NotImplementedException(),
             };
 
             return value * formula.Sign;
         }
     }
 
+    public Point Translate(Point point, int targetScanner)
+    {
+        Point oPoint = point;
+
+        var translation = Translations[targetScanner];
+
+        point = ApplyOrientationFormula(point, translation.Formula);
+        point = point.MulMinus1();
+        point = point.Add(translation.BasePoint);
+
+        return point;
+    }
 }
 
-enum Dimension
+enum Dimension { X, Y, Z }
+
+record TranslationsInformation
 {
-    X,
-    Y,
-    Z
+    public readonly Point BasePoint;
+    public readonly FormulaComponent[] Formula;
+
+    public TranslationsInformation(Point basePoint, FormulaComponent[] formula)
+    {
+        BasePoint = basePoint;
+        Formula = formula;
+    }
 }
 
 record FormulaComponent
@@ -211,15 +289,13 @@ record DistanceInformation
         FirstPoint = firstPoint;
         SecondPoint = secondPoint;
         OriginalDistance = firstPoint.GetVectorTo(secondPoint);
-        HasUniqueComponents = 
+        HasUniqueComponents =
             (Math.Abs(OriginalDistance.X) != Math.Abs(OriginalDistance.Y)) 
             && (Math.Abs(OriginalDistance.Y) != Math.Abs(OriginalDistance.Z)) 
             && (Math.Abs(OriginalDistance.X) != Math.Abs(OriginalDistance.Z))
             && OriginalDistance.X != 0
             && OriginalDistance.Y != 0
             && OriginalDistance.Z != 0;
-
-
 
         int[] components = [Math.Abs(OriginalDistance.X), Math.Abs(OriginalDistance.Y), Math.Abs(OriginalDistance.Z)];
         CanonicalForm = string.Join(",", components.Order());
@@ -258,9 +334,15 @@ record class Point
     {
         return new Point(-X, -Y, -Z);
     }
+
     public Point Add(Point p)
     {
         return new Point(X + p.X, Y + p.Y, Z + p.Z);
+    }
+
+    public long GetManhattanDistance(Point scanner2)
+    {
+        return Math.Abs(X - scanner2.X) + Math.Abs(Y - scanner2.Y) + Math.Abs(Z - scanner2.Z);
     }
 }
 

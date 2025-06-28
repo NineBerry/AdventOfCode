@@ -9,44 +9,93 @@
 
     string[] codesToEnter = File.ReadAllLines(fileName);
 
-    Console.WriteLine("Part 1: " + Solve(codesToEnter, 2));
+    Console.WriteLine("Part 1: " + SolveFast(codesToEnter, 2));
     Console.WriteLine("Part 2: " + SolveFast(codesToEnter, 25));
     Console.ReadLine();
 }
 
-long Solve(string[] codesToEnter, int countDirectionalKeypads)
-{
-    Spaceship spaceship = new(countDirectionalKeypads);
-    return codesToEnter.Sum(spaceship.GetCodeComplexity);
-}
-
 long SolveFast(string[] codesToEnter, int countDirectionalKeypads)
 {
-    // Just testing now during development
-    Spaceship spaceship = new(2);
-    FasterSpaceship fasterSpaceship = new(2);
-
-    string testCode = codesToEnter.First();
-
-    Console.WriteLine($"Classic : {spaceship.GetButtonPresses(testCode)}");
-    Console.WriteLine($"Faster  : {fasterSpaceship.GetButtonPresses(testCode)}");
-    return 0;
-
-    // FasterSpaceship fasterSpaceship = new(countDirectionalKeypads);
-    // return codesToEnter.Sum(fasterSpaceship.GetCodeComplexity);
+    FasterSpaceship fasterSpaceship = new(countDirectionalKeypads);
+    return codesToEnter.Sum(fasterSpaceship.GetCodeComplexity);
 }
 
+public static class Keypads
+{
+    public const char GAP = 'G';
 
-// Part 2
-// 203531410 too low
-// 5369454759343 too low
-// 1562056304574850 too high
-// 
-// 14531421692399 is wrong
-// 91582698116141 is wrong
-// 621377047148253 is wrong
-// 1565783261018851 is wrong
+    public static char NumericKeypad(char currentPosition, char movement)
+    {
+        return (currentPosition, movement) switch
+        {
+            ('7', '>') => '8',
+            ('7', 'v') => '4',
 
+            ('8', '<') => '7',
+            ('8', '>') => '9',
+            ('8', 'v') => '5',
+
+            ('9', '<') => '8',
+            ('9', 'v') => '6',
+
+            ('4', '^') => '7',
+            ('4', '>') => '5',
+            ('4', 'v') => '1',
+
+            ('5', '<') => '4',
+            ('5', '>') => '6',
+            ('5', '^') => '8',
+            ('5', 'v') => '2',
+
+            ('6', '<') => '5',
+            ('6', '^') => '9',
+            ('6', 'v') => '3',
+
+            ('1', '^') => '4',
+            ('1', '>') => '2',
+
+            ('2', '<') => '1',
+            ('2', '>') => '3',
+            ('2', '^') => '5',
+            ('2', 'v') => '0',
+
+            ('3', '<') => '2',
+            ('3', '^') => '6',
+            ('3', 'v') => 'A',
+
+            ('0', '>') => 'A',
+            ('0', '^') => '2',
+
+            ('A', '<') => '0',
+            ('A', '^') => '3',
+
+            _ => Keypads.GAP,
+        };
+    }
+
+    public static char DirectionalKeypad(char currentPosition, char movement)
+    {
+        return (currentPosition, movement) switch
+        {
+            ('^', '>') => 'A',
+            ('^', 'v') => 'v',
+
+            ('A', '<') => '^',
+            ('A', 'v') => '>',
+
+            ('<', '>') => 'v',
+
+            ('v', '<') => '<',
+            ('v', '>') => '>',
+            ('v', '^') => '^',
+
+            ('>', '<') => 'v',
+            ('>', '^') => 'A',
+
+            _ => Keypads.GAP,
+        };
+    }
+}
 
 class FasterSpaceship
 {
@@ -83,7 +132,6 @@ class FasterSpaceship
         foreach (var movement in movements)
         {
             cost += GetCost(movement.First, movement.Second, level);
-            cost += 1; // pressing button
         }
 
         return cost;
@@ -91,30 +139,67 @@ class FasterSpaceship
 
     private long GetCost(char from, char to, int level)
     {
-        if (from == to) return 0;
-        if (level == 0) return 0;
+        if (from == to) return 1;
+        if (level == 0) return 1;
 
         if(CostCache.TryGetValue((from, to, level), out var cached))
         {
             return cached;
         }
 
-        long result = 0;
+        // Get all possible paths using tree search
+        string[] paths = GetPossiblePathMovements(from, to, level);
 
-        // TODO
-        // Plan:
-        // 1. Get all possible paths using tree search
-        // 2. For each possible path, get the cost on the lower level
-        //    by passing the actual path movements to GetSequenceCost with lower level
-        // 3. Take the lowesst cost   
+        // For each possible path, get the cost on the lower level
+        // by passing the actual path movements to GetSequenceCost with lower level.
+        // Take the lowesst cost   
+        var result = paths.Min(path => GetSequenceCost(path, level - 1));
 
         CostCache.Add((from, to, level), result);
 
         return result;
     }
 
+    private string[] GetPossiblePathMovements(char from, char to, int level)
+    {
+        List<string> paths = [];
 
+        Func<char,char,char> keypad = level == DigitalKeypadLevel ? Keypads.NumericKeypad : Keypads.DirectionalKeypad;
 
+        Traverse(from, "", "");
+
+        void Traverse(char current, string pathButtons, string pathDirctions)
+        {
+            foreach(var move in "><^v")
+            {
+                char next = keypad(current, move);
+
+                if(pathButtons.Contains(next)) continue; // Already visited this button in this path
+
+                if (next == Keypads.GAP) continue; // Invalid move
+                if (next == to)
+                {
+                    paths.Add(pathDirctions + move + "A");
+                }
+                else
+                {
+                    Traverse(next, pathButtons + next, pathDirctions + move);
+                }
+            }
+        }
+
+        return paths.ToArray();
+    }
+}
+
+/*
+ * 
+ * Original slow code 
+ 
+long Solve(string[] codesToEnter, int countDirectionalKeypads)
+{
+    Spaceship spaceship = new(countDirectionalKeypads);
+    return codesToEnter.Sum(spaceship.GetCodeComplexity);
 }
 
 class Spaceship
@@ -136,8 +221,6 @@ class Spaceship
 
     public long GetButtonPresses(string targetCode)
     {
-        // Console.WriteLine("Searching code " + targetCode);
-
         HashSet<string> seenCount = [];
         
         PriorityQueue<(RobotState[] RobotStates, int DigitsAlreadyFound), long> queue = new();
@@ -147,7 +230,6 @@ class Spaceship
         {
             if (current.DigitsAlreadyFound == targetCode.Length)
             {
-                // Console.WriteLine("Returning " + presses);
                 return presses;
             }
 
@@ -181,8 +263,6 @@ class Spaceship
                 // An actual signal was pressed at the very last robot
                 if(answer.NewSignal == exptectedSignal)
                 {
-                    // Console.WriteLine("Digit found " + exptectedSignal);
-                    
                     queue.Clear();
                     seenCount.Clear();
 
@@ -226,7 +306,6 @@ class Robot
     }
 
     public const char PANIC = 'X';
-    public const char GAP = 'G';
     public const char PRESS = 'A';
     public const char MOVED = 'M';
 }
@@ -257,7 +336,7 @@ class RobotStack
             (var newPosition, updatedSignal) = robot.ReceiveSignal(currentOldState.CurrentPosition, updatedSignal);
 
             // Any robot moved outside pad => panic
-            if (newPosition == Robot.GAP) return (null, Robot.PANIC);
+            if (newPosition == Keypads.GAP) return (null, Robot.PANIC);
 
             // Robot moved and visited previously visited spot => panic
             if (updatedSignal == Robot.MOVED
@@ -302,78 +381,8 @@ class RobotStack
         return string.Join("", robotStates.Select(r => r.CurrentPosition));
     }
 
-    private static Robot CreateNumericKeypadRobot() => new Robot(NumericKeypad);
-    private static Robot CreateDirectionalKeypadRobot() => new Robot(DirectionalKeypad);
-
-    private static char NumericKeypad(char currentPosition, char movement)
-    {
-        return (currentPosition, movement) switch
-        {
-            ('7', '>') => '8',
-            ('7', 'v') => '4',
-            
-            ('8', '<') => '7',
-            ('8', '>') => '9',
-            ('8', 'v') => '5',
-            
-            ('9', '<') => '8',
-            ('9', 'v') => '6',
-
-            ('4', '^') => '7',
-            ('4', '>') => '5',
-            ('4', 'v') => '1',
-
-            ('5', '<') => '4',
-            ('5', '>') => '6',
-            ('5', '^') => '8',
-            ('5', 'v') => '2',
-
-            ('6', '<') => '5',
-            ('6', '^') => '9',
-            ('6', 'v') => '3',
-            
-            ('1', '^') => '4',
-            ('1', '>') => '2',
-
-            ('2', '<') => '1',
-            ('2', '>') => '3',
-            ('2', '^') => '5',
-            ('2', 'v') => '0',
-
-            ('3', '<') => '2',
-            ('3', '^') => '6',
-            ('3', 'v') => 'A',
-
-            ('0', '>') => 'A',
-            ('0', '^') => '2',
-
-            ('A', '<') => '0',
-            ('A', '^') => '3',
-
-            _ => Robot.GAP,
-        };
-    }
-    
-    private static char DirectionalKeypad(char currentPosition, char movement)
-    {
-        return (currentPosition, movement) switch
-        {
-            ('^', '>') => 'A',
-            ('^', 'v') => 'v',
-
-            ('A', '<') => '^',
-            ('A', 'v') => '>',
-
-            ('<', '>') => 'v',
-
-            ('v', '<') => '<',
-            ('v', '>') => '>',
-            ('v', '^') => '^',
-
-            ('>', '<') => 'v',
-            ('>', '^') => 'A',
-
-            _ => Robot.GAP,
-        };
-    }
+    private static Robot CreateNumericKeypadRobot() => new Robot(Keypads.NumericKeypad);
+    private static Robot CreateDirectionalKeypadRobot() => new Robot(Keypads.DirectionalKeypad);
 }
+
+*/

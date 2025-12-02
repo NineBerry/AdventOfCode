@@ -26,20 +26,20 @@ long Part1(InclusiveRange[] ranges)
 long Part2(InclusiveRange[] ranges)
 {
     // Max value is 10 digits long, so
-    // multiply not more than 10 times
+    // repeat not more than 10 times
     return Solve(ranges, 10);
 }
 
-long Solve(InclusiveRange[] ranges, int maxMultiply)
+long Solve(InclusiveRange[] ranges, int maxRepeat)
 {
     return
-        CreateInvalidNumbers(maxMultiply)
+        CreateInvalidNumbers(maxRepeat)
         .Where(num => ranges.Any(r => r.Contains(num)))
         .Distinct()
         .Sum();
 }
 
-IEnumerable<long> CreateInvalidNumbers(int maxMultiply)
+IEnumerable<long> CreateInvalidNumbers(int maxRepeat)
 {
     // Max value was determined once with 
     // 
@@ -50,16 +50,19 @@ IEnumerable<long> CreateInvalidNumbers(int maxMultiply)
     // 
     // So max value we need to duplicate is ~100_000
     // We will use that as upper bound.
-    foreach (var multiply in Enumerable.Range(2, maxMultiply - 1))
+    foreach (var repeat in Enumerable.Range(2, maxRepeat - 1))
     {
         foreach (var num in Enumerable.Range(1, 100_000))
         {
-            yield return num.Multiply(multiply);
+            long result = num.Repeat(repeat);
+
+            // Once we have overflown long, we can stop
+            // searching for this number of repeats
+            if (result == long.MaxValue) break;
+            
+            yield return result;
         }
     }
-
-    // To increase performance when multiplying 2 times, 3 times and so forth,
-    // we could calcuate a respective upper bound each time using log10(). 
 }
 
 public record InclusiveRange
@@ -87,12 +90,12 @@ public record InclusiveRange
 
 public static class Tools
 {
-    public static long Multiply(this int number, int times)
+    public static long Repeat(this int number, int times)
     {
         string s = number.ToString();
-        string multiplied = string.Concat(Enumerable.Repeat(s, times));
+        string repeated = string.Concat(Enumerable.Repeat(s, times));
 
-        if (!long.TryParse(multiplied, out var result))
+        if (!long.TryParse(repeated, out var result))
         {
             result = long.MaxValue;
         }

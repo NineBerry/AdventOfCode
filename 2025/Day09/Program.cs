@@ -1,6 +1,7 @@
 ﻿// #define Sample
 
 using Rectangle = (Point CornerA, Point CornerB, long Area);
+using Line = (Point Start, Point End);
 
 {
 #if Sample
@@ -8,7 +9,6 @@ using Rectangle = (Point CornerA, Point CornerB, long Area);
 #else
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2025\Day09\Full.txt";
 #endif
-
 
     MovieTheater movieTheater = new MovieTheater(File.ReadAllLines(fileName));
 
@@ -18,39 +18,25 @@ using Rectangle = (Point CornerA, Point CornerB, long Area);
 }
 
 // idea for Part2: 
-// Create set of border points
 // Sort all possible rectangles by area descending and check to find first that works
 // To check, check its four corners and four edges.
 // The corners must be inside the loop that is they must be on a border or we must hit a border going in all four directions 
-// When checking the edges, only check points after a border. Only those could be outside if we start inside
-
-// Idea for performance improvement:
-// Store border sections as lines and then try to intersect
-// those with edges to test instead of testing edges by going tile to tile
-
+// The edges must not intersect with a border
 
 public class MovieTheater
 {
     private readonly Point[] redTiles;
     private readonly Rectangle[] rectangles;
-    private readonly HashSet<Point> borderTiles = [];
-
-    private readonly long minX;
-    private readonly long maxX;
-    private readonly long minY;
-    private readonly long maxY;
+    private List<Line> verticalLinesWithoutCorners = [];
+    private List<Line> horizontalLinesWithoutCorners = [];
+    private List<Line> verticalLinesWithCorners = [];
+    private List<Line> horizontalLinesWithCorners = [];
 
     public MovieTheater(string[] lines)
     {
         redTiles = lines.Select(Point.Parse).ToArray();
-
-        minX = redTiles.Min(t => t.X);
-        maxX = redTiles.Max(t => t.X);
-        minY = redTiles.Min(t => t.Y);
-        maxY = redTiles.Max(t => t.Y);
-
         rectangles = MakeRectangles(redTiles).OrderByDescending(r => r.Area).ToArray();
-        FillBorderTiles();
+        AddBorderLines();
     }
 
     public long GetBiggestRectangle()
@@ -77,32 +63,36 @@ public class MovieTheater
         if (!IsPointInsideLoop(new Point(maxRectangleX, maxRectangleY))) return false;
 
         // Check edges inside loop
-        if (!IsEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(maxRectangleX, minRectangleY), Direction.Right)) return false;
-        if (!IsEdgeInsideLoop(new Point(minRectangleX, maxRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Right)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX + 1, minRectangleY), new Point(maxRectangleX - 1, minRectangleY), Direction.Right)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX + 1, maxRectangleY), new Point(maxRectangleX - 1, maxRectangleY), Direction.Right)) return false;
 
-        if (!IsEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(minRectangleX, maxRectangleY), Direction.Down)) return false;
-        if (!IsEdgeInsideLoop(new Point(maxRectangleX, minRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Down)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX, minRectangleY + 1), new Point(minRectangleX, maxRectangleY - 1), Direction.Down)) return false;
+        if (!IsEdgeInsideLoop(new Point(maxRectangleX, minRectangleY + 1), new Point(maxRectangleX, maxRectangleY - 1), Direction.Down)) return false;
+
         return true;
     }
 
     private bool IsEdgeInsideLoop(Point start, Point end, Direction direction)
     {
-        Point traverse = start;
+        // We need to use lines without corners, because intersecting with corners
+        // does not leave the loop
 
-        while (traverse != end)
+        if(direction is Direction.Down)
         {
-            Point next = traverse.GetNeightboringPoint(direction);
-            if (borderTiles.Contains(traverse))
-            {
-                if(!IsPointInsideLoop(next)) 
-                {
-                    return false;
-                }
-            }
-            traverse = next;
+            return horizontalLinesWithoutCorners.All(l => !Intersects(l, (start, end)));
         }
+        else
+        {
+            return verticalLinesWithoutCorners.All(l => !Intersects((start, end), l));
+        }
+    }
 
-        return true;
+    bool Intersects(Line horizontal, Line vertical)
+    {
+        bool xInRange = horizontal.Start.X <= vertical.Start.X && vertical.Start.X <= horizontal.End.X;
+        bool yInRange = vertical.Start.Y <= horizontal.Start.Y && horizontal.Start.Y <= vertical.End.Y;
+
+        return xInRange && yInRange;
     }
 
     private Dictionary<Point, bool> pointsInLoopCache = [];
@@ -111,38 +101,18 @@ public class MovieTheater
     {
         if (pointsInLoopCache.TryGetValue(point, out var result)) return result;
 
-        result = (HitsBorder(point, Direction.Up)
-        && HitsBorder(point, Direction.Down)
-        && HitsBorder(point, Direction.Left)
-        && HitsBorder(point, Direction.Right));
+        result = horizontalLinesWithCorners.Any(l => Intersects(l, (new Point(point.X, 0), point))) 
+            && horizontalLinesWithCorners.Any(l => Intersects(l, (point, new Point(point.X, long.MaxValue))))
+            && verticalLinesWithCorners.Any(l => Intersects((new Point(0, point.Y), point), l))
+            && verticalLinesWithCorners.Any(l => Intersects((point, new Point(long.MaxValue, point.Y)), l));
 
         pointsInLoopCache.Add(point, result);
+        
         return result;
-
-        bool HitsBorder(Point point, Direction direction)
-        {
-            Point traverse = point;
-            while (!IsOutsideMovieTheater(traverse))
-            {
-                if (borderTiles.Contains(traverse))
-                {
-                    return true;
-                }
-                traverse = traverse.GetNeightboringPoint(direction);
-            }
-
-            return false;
-        }
-    }
-
-    private bool IsOutsideMovieTheater(Point point)
-    {
-        return point.X < minX || point.X > maxX || point.Y < minY || point.Y > maxY;
     }
 
     private Rectangle[] MakeRectangles(Point[] tiles)
     {
-
         List<Rectangle> result = [];
 
         for (int i = 0; i < tiles.Length - 1; i++)
@@ -157,39 +127,34 @@ public class MovieTheater
         return result.ToArray();
     }
 
-    void FillBorderTiles()
+    void AddBorderLines()
     {
         foreach (var pair in redTiles.Zip(redTiles.Skip(1)))
         {
-            FillBorderTilesLine(pair.First, pair.Second);
+            AddBorderLine(pair.First, pair.Second);
         }
-        FillBorderTilesLine(redTiles.Last(), redTiles.First());
+        AddBorderLine(redTiles.Last(), redTiles.First());
     }
 
-    void FillBorderTilesLine(Point first, Point second)
+    void AddBorderLine(Point first, Point second)
     {
         if (first.Y == second.Y)
         {
             var minX = Math.Min(first.X, second.X);
             var maxX = Math.Max(first.X, second.X);
 
-            for (long i = minX; i <= maxX; i++)
-            {
-                borderTiles.Add(new Point(i, first.Y));
-            }
+            horizontalLinesWithoutCorners.Add((new Point(minX + 1, first.Y), new Point(maxX - 1, first.Y)));
+            horizontalLinesWithCorners.Add((new Point(minX, first.Y), new Point(maxX, first.Y)));
         }
         else
         {
             var minY = Math.Min(first.Y, second.Y);
             var maxY = Math.Max(first.Y, second.Y);
 
-            for (long i = minY; i <= maxY; i++)
-            {
-                borderTiles.Add(new Point(first.X, i));
-            }
+            verticalLinesWithoutCorners.Add((new Point(first.X, minY + 1), new Point(first.X, maxY - 1)));
+            verticalLinesWithCorners.Add((new Point(first.X, minY), new Point(first.X, maxY)));
         }
     }
-
 }
 
 record struct Point(long X, long Y)

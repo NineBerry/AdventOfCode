@@ -1,6 +1,5 @@
 ﻿// #define Sample
 
-using System.Text.RegularExpressions;
 using Rectangle = (Point CornerA, Point CornerB, long Area);
 
 {
@@ -18,15 +17,16 @@ using Rectangle = (Point CornerA, Point CornerB, long Area);
     Console.ReadLine();
 }
 
-
 // idea for Part2: 
-// Create sets of border points
+// Create set of border points
 // Sort all possible rectangles by area descending and check to find first that works
 // To check, check its four corners and four edges.
 // The corners must be inside the loop that is they must be on a border or we must hit a border going in all four directions 
-// The edges may not cross a border (except directly neighboring borders)
+// When checking the edges, only check points after a border. Only those could be outside if we start inside
 
-// 4670137716 too high
+// Idea for performance improvement:
+// Store border sections as lines and then try to intersect
+// those with edges to test instead of testing edges by going tile to tile
 
 
 public class MovieTheater
@@ -65,29 +65,27 @@ public class MovieTheater
 
     private bool IsInsideLoop(Rectangle rectangle)
     {
-        // Console.WriteLine(rectangle.Area);
-        
         long minRectangleX = Math.Min(rectangle.CornerA.X, rectangle.CornerB.X);
         long minRectangleY = Math.Min(rectangle.CornerA.Y, rectangle.CornerB.Y);
         long maxRectangleX = Math.Max(rectangle.CornerA.X, rectangle.CornerB.X);
         long maxRectangleY = Math.Max(rectangle.CornerA.Y, rectangle.CornerB.Y);
 
         // Check corners inside loop
-        if (!IsInsideLoop(new Point(minRectangleX, minRectangleY))) return false;
-        if (!IsInsideLoop(new Point(minRectangleX, maxRectangleY))) return false;
-        if (!IsInsideLoop(new Point(maxRectangleX, minRectangleY))) return false;
-        if (!IsInsideLoop(new Point(maxRectangleX, maxRectangleY))) return false;
+        if (!IsPointInsideLoop(new Point(minRectangleX, minRectangleY))) return false;
+        if (!IsPointInsideLoop(new Point(minRectangleX, maxRectangleY))) return false;
+        if (!IsPointInsideLoop(new Point(maxRectangleX, minRectangleY))) return false;
+        if (!IsPointInsideLoop(new Point(maxRectangleX, maxRectangleY))) return false;
 
         // Check edges inside loop
-        if (!CheckEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(maxRectangleX, minRectangleY), Direction.Right)) return false;
-        if (!CheckEdgeInsideLoop(new Point(minRectangleX, maxRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Right)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(maxRectangleX, minRectangleY), Direction.Right)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX, maxRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Right)) return false;
 
-        if (!CheckEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(minRectangleX, maxRectangleY), Direction.Down)) return false;
-        if (!CheckEdgeInsideLoop(new Point(maxRectangleX, minRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Down)) return false;
+        if (!IsEdgeInsideLoop(new Point(minRectangleX, minRectangleY), new Point(minRectangleX, maxRectangleY), Direction.Down)) return false;
+        if (!IsEdgeInsideLoop(new Point(maxRectangleX, minRectangleY), new Point(maxRectangleX, maxRectangleY), Direction.Down)) return false;
         return true;
     }
 
-    private bool CheckEdgeInsideLoop(Point start, Point end, Direction direction)
+    private bool IsEdgeInsideLoop(Point start, Point end, Direction direction)
     {
         Point traverse = start;
 
@@ -96,7 +94,10 @@ public class MovieTheater
             Point next = traverse.GetNeightboringPoint(direction);
             if (borderTiles.Contains(traverse))
             {
-                if(!IsInsideLoop(next)) return false;
+                if(!IsPointInsideLoop(next)) 
+                {
+                    return false;
+                }
             }
             traverse = next;
         }
@@ -104,18 +105,18 @@ public class MovieTheater
         return true;
     }
 
-    private Dictionary<Point, bool> pointsInLoop = [];
+    private Dictionary<Point, bool> pointsInLoopCache = [];
 
-    private bool IsInsideLoop(Point point)
+    private bool IsPointInsideLoop(Point point)
     {
-        if (pointsInLoop.TryGetValue(point, out var result)) return result;
+        if (pointsInLoopCache.TryGetValue(point, out var result)) return result;
 
         result = (HitsBorder(point, Direction.Up)
         && HitsBorder(point, Direction.Down)
         && HitsBorder(point, Direction.Left)
         && HitsBorder(point, Direction.Right));
 
-        pointsInLoop.Add(point, result);
+        pointsInLoopCache.Add(point, result);
         return result;
 
         bool HitsBorder(Point point, Direction direction)
@@ -138,7 +139,6 @@ public class MovieTheater
     {
         return point.X < minX || point.X > maxX || point.Y < minY || point.Y > maxY;
     }
-
 
     private Rectangle[] MakeRectangles(Point[] tiles)
     {
@@ -175,15 +175,7 @@ public class MovieTheater
 
             for (long i = minX; i <= maxX; i++)
             {
-                Point newBorderTile = new Point(i, first.Y);
-
-                if (i != minX && i != maxX)
-                {
-                    if (borderTiles.Contains(newBorderTile.GetNeightboringPoint(Direction.Up))) Console.WriteLine("Neibor");
-                    if (borderTiles.Contains(newBorderTile.GetNeightboringPoint(Direction.Down))) Console.WriteLine("Neibor");
-                }
-
-                borderTiles.Add(newBorderTile);
+                borderTiles.Add(new Point(i, first.Y));
             }
         }
         else
@@ -193,14 +185,6 @@ public class MovieTheater
 
             for (long i = minY; i <= maxY; i++)
             {
-                Point newBorderTile = new Point(first.X, i);
-                
-                if (i != minY && i != maxY)
-                {
-                    if (borderTiles.Contains(newBorderTile.GetNeightboringPoint(Direction.Left))) Console.WriteLine("Neibor");
-                    if (borderTiles.Contains(newBorderTile.GetNeightboringPoint(Direction.Right))) Console.WriteLine("Neibor");
-                }
-                
                 borderTiles.Add(new Point(first.X, i));
             }
         }
@@ -208,63 +192,12 @@ public class MovieTheater
 
 }
 
-/*
-long Part2(Point[] tiles, Rectangle[] rectangles)
-{
-    HashSet<Point> borderPoints = [];
-
-    FillBorderPoints(tiles, borderPoints);
-
-    var sortedRectangles = rectangles.OrderByDescending(r => r.Area);
-
-    var biggest = sortedRectangles.First(r => RectangleFits(r, borderPoints));
-
-    return biggest.Area;
-}
-*/
-
-/*
-bool RectangleFits(Rectangle rectangle, HashSet<Point> borderPoints)
-{
-    long minX = Math.Min(rectangle.CornerA.X, rectangle.CornerB.X);
-    long minY = Math.Min(rectangle.CornerA.Y, rectangle.CornerB.Y);
-    long maxX = Math.Max(rectangle.CornerA.X, rectangle.CornerB.X);
-    long maxY = Math.Max (rectangle.CornerA.Y, rectangle.CornerB.Y);
-
-    return
-        CheckHorizontalEdge(new Point(minX, minY), new Point(maxX, minY), borderPoints)
-        && CheckHorizontalEdge(new Point(minX, maxY), new Point(maxX, maxY), borderPoints)
-        && CheckVerticalEdge(new Point(minX, minY), new Point(minX, maxY), borderPoints)
-        && CheckVerticalEdge(new Point(maxX, minY), new Point(maxX, minY), borderPoints);
-}
-
-bool CheckHorizontalEdge(Point start, Point end, HashSet<Point> verticalBorders)
-{
-    return true;
-}
-
-bool CheckVerticalEdge(Point start, Point end, HashSet<Point> horizontalBorders)
-{
-    return true;
-
-}
-
-
-*/
-
-
-
 record struct Point(long X, long Y)
 {
     public static Point Parse(string input)
     {
-        var numbers = Tools.ParseLongs(input);
+        var numbers = input.Split(",").Select(long.Parse).ToArray();
         return new(numbers[0], numbers[1]);
-    }
-
-    public override string ToString()
-    {
-        return $"{X},{Y}";
     }
 
     public static long CalculateAreaFromTwoPoints(Point a, Point b)
@@ -295,15 +228,4 @@ enum Direction
     Right,
     Up,
     Down
-}
- 
-static class Tools
-{
-    public static long[] ParseLongs(string input)
-    {
-        return
-            Regex.Matches(input, @"\d+")
-            .Select(m => long.Parse(m.Value))
-            .ToArray();
-    }
 }

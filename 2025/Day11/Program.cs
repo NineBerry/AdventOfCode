@@ -64,6 +64,10 @@ class Network
         Edges.Add(nodes[0], nodes.Skip(1).ToHashSet());
     }
 
+    // TODO: Since the graphs does not contain loops,
+    // we can actually use memoization on Traverse()
+    // and return the number of paths found
+
     public long CountUniquePaths(string start, string end)
     {
         long counter = 0;

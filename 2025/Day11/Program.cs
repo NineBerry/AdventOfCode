@@ -25,23 +25,28 @@ long Part1(Network network)
     return network.CountUniquePaths("you", "out");
 }
 
+
 long Part2(Network network)
 {
     // We noticed that one intermediate target always appears before the other
     // -> Only need to look at that order and partial paths from start -> first -> second -> out
 
-    long fromFFTToDAC = network.CountUniquePaths("fft", "dac");
-    long fromDACToFFT = network.CountUniquePaths("dac", "fft");
+    const string NODE_DAC = "dac";
+    const string NODE_FFT = "fft";
+    const string NODE_SVR = "svr";
+    const string NODE_OUT = "out";
+
+    long fromFFTToDAC = network.CountUniquePaths(NODE_FFT, NODE_DAC);
+    long fromDACToFFT = network.CountUniquePaths(NODE_DAC, NODE_FFT);
 
     if (fromDACToFFT != 0 && fromFFTToDAC != 0) throw new Exception("Unexpected loop between fft and dac");
 
-    string firstTarget = fromDACToFFT == 0 ? "fft" : "dac";
-    string secondTarget = fromDACToFFT == 0 ? "dac" : "fft";
+    string firstTarget = fromDACToFFT == 0 ? NODE_FFT : NODE_DAC;
+    string secondTarget = fromDACToFFT == 0 ? NODE_DAC : NODE_FFT;
 
-
-    long fromStartToFirstTarget = network.CountUniquePaths("svr", firstTarget);
-    long fromFirstToSecondTarget = firstTarget == "fft" ? fromFFTToDAC : fromDACToFFT;
-    long fromSecondTargetToEnd = network.CountUniquePaths(secondTarget, "out");
+    long fromStartToFirstTarget = network.CountUniquePaths(NODE_SVR, firstTarget);
+    long fromFirstToSecondTarget = fromFFTToDAC + fromDACToFFT;
+    long fromSecondTargetToEnd = network.CountUniquePaths(secondTarget, NODE_OUT);
 
     return fromStartToFirstTarget * fromFirstToSecondTarget * fromSecondTargetToEnd;
 }
@@ -64,49 +69,24 @@ class Network
         Edges.Add(nodes[0], nodes.Skip(1).ToHashSet());
     }
 
-    // TODO: Since the graphs does not contain loops,
-    // we can actually use memoization on Traverse()
-    // and return the number of paths found
-
     public long CountUniquePaths(string start, string end)
     {
-        long counter = 0;
-        HashSet<string> deadEnds = [];
+        Dictionary<string, long> cache = [];
+        return Traverse(start);
 
-        Traverse(start, [start]);
-
-        return counter;
-
-        // returns true when at least 1 valid path found
-        bool Traverse(string current, List<string> soFar)
+        long Traverse(string current)
         {
-            if(current == end)
+            if (cache.TryGetValue(current, out var result)) return result;
+
+            if (current == end) return 1;
+
+            if (Edges.TryGetValue(current, out var neighbors))
             {
-                counter++;
-                return true;
+                result = neighbors.Sum(Traverse);
             }
 
-            if (!Edges.ContainsKey(current)) return false;
-            if (!Edges[current].Any()) return false;
-
-            bool anyFound = false;
-            foreach (var neighbor in Edges[current])
-            {
-                if (!soFar.Contains(neighbor) && !deadEnds.Contains(neighbor))
-                {
-                    bool found = Traverse(neighbor, [.. soFar, neighbor]);
-                    anyFound = anyFound || found;
-                }
-            }
-
-            if (!anyFound)
-            {
-                // There is no way from this node to the end
-                // So don't try again
-                deadEnds.Add(current);  
-            }
-
-            return anyFound;
+            cache.Add(current, result);
+            return result;
         }
     }
 }

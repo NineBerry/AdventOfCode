@@ -1,7 +1,5 @@
 ﻿// #define Sample
 
-using System.Collections.Frozen;
-
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\2016\Day19\Sample.txt";

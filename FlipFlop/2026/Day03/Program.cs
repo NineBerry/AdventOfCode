@@ -45,19 +45,12 @@ long Part3(string[] passwords)
         best = Math.Max(best, TryCharacter(ch));
     }
 
+    return best;
+
     long TryCharacter(char character)
     {
-        long result = 0;
-
-        foreach(var password in passwords)
-        {
-            result += ScorePassword(password + character, 2);
-        }
-        
-        return result;
+        return passwords.Sum(password => ScorePassword(password + character, 2));
     }
-
-    return best;
 }
 
 long ScorePassword(string password, int level)

@@ -6,6 +6,7 @@
     int part1Cut = 8;
 #else
     string fileName = @"D:\Dropbox\Work\AdventOfCode\FlipFlop\2026\Day04\Full.txt";
+    // string fileName = @"D:\Dropbox\Work\AdventOfCode\FlipFlop\2026\Day04\Full2.txt";
     int part1Cut = 400;
 #endif
 
@@ -13,7 +14,8 @@
 
     Console.WriteLine("Part 1: " + Part1(flower, part1Cut));
     Console.WriteLine("Part 2: " + Part2(flower));
-    Console.WriteLine("Part 3: " + Part3(flower));
+    // Console.WriteLine("Part 3: " + Part3(flower));
+    Console.WriteLine("Part 3: " + Part3Optimized(flower));
 
     Console.ReadLine();
 }
@@ -41,34 +43,60 @@ long Part3(Flower flower)
     return workers;
 }
 
+long Part3Optimized(Flower flower)
+{
+    return flower.HarvestAll();
+}
+
+
 class Flower
 {
-    private string[] representation;
+    enum LeafType
+    {
+        None,
+        Left,
+        Right
+    }
+
+    private LeafType[] leaves;
 
     public Flower(string[] representation)
     {
         var representationHeight = representation.Length;
-        this.representation =
+        var strippedAndReversed =
             representation
             .Take(representationHeight - 1) // Cut root
             .Skip(3) // Cut top
             .Reverse() // From bottom to top
             .ToArray();
+
+        leaves = strippedAndReversed.Select(Translate).ToArray();
+
+        LeafType Translate(string line)
+        {
+            return line switch
+            {
+                "  |" => LeafType.None,
+                "o-|" => LeafType.Left,
+                "  |-o" => LeafType.Right,
+                _ => throw new InvalidOperationException($"Invalid line: {line}")
+            };
+        }
     }
 
     public long CountLeavesAbove(int cut)
     {
-        return representation.Skip(cut).Count(HasLeave);
+        return leaves.Skip(cut).Count(HasLeave);
     }
 
     public long CountSwapsClimbing()
     {
-        var leaves = representation.Where(HasLeave);
+        var onlyLeaves = leaves.Where(HasLeave);
 
         long swaps = 0;
 
-        string previous = leaves.First();
-        foreach (var leave in leaves)
+        var previous = onlyLeaves.First();
+        foreach (var leave in onlyLeaves)
         {
             if (leave != previous)
             {
@@ -83,29 +111,79 @@ class Flower
     public void HarvestTop()
     {
         // First remove all lines without leaves
-        representation = representation.Where(HasLeave).ToArray();
+        leaves = leaves.Where(HasLeave).ToArray();
 
-        string previous = representation.First();
+        LeafType previous = leaves.First();
 
-        for (int i = 0; i < representation.Length; i++)
+        for (int i = 0; i < leaves.Length; i++)
         {
-            if (representation[i] != previous)
+            if (leaves[i] != previous)
             {
-                previous = representation[i];
-                representation[i - 1] = "  |";
+                previous = leaves[i];
+                leaves[i - 1] = LeafType.None;
             }
         }
 
-        representation[representation.Length - 1] = "  |";
+        leaves[leaves.Length - 1] = LeafType.None;
     }
 
     public bool HasLeaves()
     {
-        return representation.Any(HasLeave);
+        return leaves.Any(HasLeave);
     }
 
-    private static bool HasLeave(string line)
+    private static bool HasLeave(LeafType leaf)
     {
-        return line.Contains('o');
+        return leaf != LeafType.None;
+    }
+
+    internal long HarvestAll()
+    {
+        List<(LeafType LeafType, int Count)> rleLeaves = ConvertToRunLength(leaves);
+        rleLeaves = MergeRunLength(rleLeaves);
+
+        int workers = 0;
+
+        while(rleLeaves.Any())
+        {
+            int batchWorkers = rleLeaves.Min(l => l.Count);
+
+            rleLeaves = rleLeaves.Select(l => (l.LeafType, l.Count - batchWorkers)).ToList();
+            rleLeaves = MergeRunLength(rleLeaves);
+
+            workers += batchWorkers;
+        }
+
+        return workers;
+    }
+
+    private List<(LeafType LeafType, int Count)> MergeRunLength(List<(LeafType LeafType, int Count)> rleLeaves)
+    {
+        List<(LeafType LeafType, int Count)> result = new();
+
+        LeafType previous = LeafType.None;
+
+        foreach (var leave in rleLeaves)
+        {
+            if(leave.Count == 0) continue;
+
+            if (leave.LeafType != previous)
+            {
+                result.Add(leave);
+                previous = leave.LeafType;
+            }
+            else
+            {
+                var last = result.Last();
+                result[result.Count - 1] = (last.LeafType, last.Count + leave.Count);
+            }
+        }
+
+        return result;
+    }
+
+    private List<(LeafType LeafType, int Count)> ConvertToRunLength(LeafType[] leaves)
+    {
+        return leaves.Where(HasLeave).Select(l => (l, 1)).ToList();
     }
 }

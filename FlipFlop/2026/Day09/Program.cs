@@ -1,8 +1,5 @@
 ﻿// #define Sample
 
-using System.Numerics;
-using WallSideSegment = (Point WallSegment, Point CorridorSegment);
-
 {
 #if Sample
     string fileName = @"D:\Dropbox\Work\AdventOfCode\FlipFlop\2026\Day09\Sample.txt";
@@ -11,37 +8,34 @@ using WallSideSegment = (Point WallSegment, Point CorridorSegment);
 #endif
 
     string[] lines = File.ReadAllLines(fileName);
+    Map map = new Map(lines);
 
-    Console.WriteLine("Part 1: " + Part1(lines));
-    Console.WriteLine("Part 2: " + Part2(lines));
-    Console.WriteLine("Part 3: " + Part3(lines));
+    Console.WriteLine("Part 1: " + Part1(map));
+    Console.WriteLine("Part 2: " + Part2(map));
+    Console.WriteLine("Part 3: " + Part3(map));
 
     Console.ReadLine();
 }
 
-BigInteger Part1(string[] lines)
+long Part1(Map map)
 {
-    Map map = new Map(lines);
-    return map.GetShortestPath(map.StartPoint, map.EndPoint, canTeleportThroughCorridors: false, canTeleportThroughWalls: false);
+    return map.GetShortestPath(canTeleportThroughCorridors: false, canTeleportThroughWalls: false);
 }
 
-BigInteger Part2(string[] lines)
+long Part2(Map map)
 {
-    Map map = new Map(lines);
-    return map.GetShortestPath(map.StartPoint, map.EndPoint, canTeleportThroughCorridors: true, canTeleportThroughWalls: false);
+    return map.GetShortestPath(canTeleportThroughCorridors: true, canTeleportThroughWalls: false);
 }
 
-BigInteger Part3(string[] lines)
+long Part3(Map map)
 {
-    Map map = new Map(lines);
-    return map.GetShortestPath(map.StartPoint, map.EndPoint, canTeleportThroughCorridors: false, canTeleportThroughWalls: true);
+    return map.GetShortestPath(canTeleportThroughCorridors: false, canTeleportThroughWalls: true);
 }
 
 class Map
 {
     private Dictionary<Point, Tile> tiles = [];
 
-    
     public Point StartPoint { get; }
     public Point EndPoint { get; }
 
@@ -68,84 +62,60 @@ class Map
         return tiles[point] is Tile.Wall;
     }
 
-    internal BigInteger GetShortestPath(Point start, Point end, bool canTeleportThroughCorridors, bool canTeleportThroughWalls)
+    private bool IsCrossing(Point point)
     {
-        HashSet<(Point, WallSideSegment?, WallSideSegment?)> visited = [];
-        PriorityQueue<(Point Point, WallSideSegment? Portal1, WallSideSegment? Portal2, bool ShallChangePortal1, bool ShallChangePortal2), int> todos = new();
+        return Point.AllDirections.All(d => !IsAWall(point.GetNeightboringPoint(d)));
+    }
 
-        Dictionary<Point, bool> knownPathState= [];
-        knownPathState.Add(end, true);
+    internal long GetShortestPath(bool canTeleportThroughCorridors, bool canTeleportThroughWalls)
+    {
+        HashSet<(Point Point, bool WithPortal)> visited = [];
+        PriorityQueue<(Point Point, bool WithPortal), int> todos = new();
 
-        todos.Enqueue((start, null, null, true, true), 0);
-
-        int lastLog = 0;
+        todos.Enqueue((StartPoint, false), 0);
 
         while (todos.TryDequeue(out var current, out var currentLength))
         {
+            if (visited.Contains((current.Point, current.WithPortal))) continue;
+            visited.Add((current.Point, current.WithPortal));
 
-            if (currentLength - lastLog > 10)
+            if (current.Point == EndPoint) return currentLength;
+
+            foreach(var direction in Point.AllDirections)
             {
-                Console.WriteLine(currentLength);
-                lastLog = currentLength;
-            }
+                var nodes = GetNodesInDirection(current.Point, direction);
 
-            if (visited.Contains((current.Point, current.Portal1, current.Portal2))) continue;
-
-            visited.Add((current.Point, current.Portal1, current.Portal2));
-            visited.Add((current.Point, current.Portal2, current.Portal1));
-
-            if (current.Point == end) return currentLength;
-
-            CheckEnqueue(current.Point.GetAllNeightboringPoints(), current.ShallChangePortal1, current.ShallChangePortal2);
-
-            if (canTeleportThroughCorridors)
-            {
-                CheckEnqueue(GetCorridorTeleportingTargets(current.Point), current.ShallChangePortal1, current.ShallChangePortal2);
-            }
-
-            if (canTeleportThroughWalls)
-            {
-                CheckEnqueue(GetPossibleWallTeleportation(current.Point, current.Portal1, current.Portal2), true, current.ShallChangePortal2);
-                CheckEnqueue(GetPossibleWallTeleportation(current.Point, current.Portal2, current.Portal1), current.ShallChangePortal1, true);
-            }
-
-            void CheckEnqueue(IEnumerable<Point> candidates, bool shallChangePortal1, bool shallChangePortal2)
-            {
-                foreach (var candidate in candidates)
+                if (nodes.Any())
                 {
-                    if (visited.Contains((candidate, current.Portal1, current.Portal2)) ) continue;
-                    if (IsAWall(candidate)) continue;
-
-                    todos.Enqueue((candidate, current.Portal1, current.Portal2, shallChangePortal1, shallChangePortal2), currentLength + 1);
+                    foreach (var next in nodes)
+                    {
+                        Enqueue(next.Point, next.Distance, false);
+                    }
+                    Enqueue(nodes.Last().Point, nodes.Last().Distance, true);
                 }
             }
 
-            if (canTeleportThroughWalls)
+            void Enqueue(Point nextPoint, int distance, bool specialHandlingEndOfCorridor)
             {
-                var newPortals = Point.AllDirections.Select(d => GetWallSideSegmentInDirection(current.Point, d)).ToArray();
-                foreach (var newPortal in newPortals)
+                if (specialHandlingEndOfCorridor)
                 {
-                    if (current.ShallChangePortal1)
+                    if (canTeleportThroughCorridors)
                     {
-                        if (newPortal.CorridorSegment != current.Portal2?.CorridorSegment)
-                        {
-                            if (!visited.Contains((current.Point, newPortal, current.Portal2)))
-                            {
-                                todos.Enqueue((current.Point, newPortal, current.Portal2, false, current.ShallChangePortal2), currentLength + 1);
-                            }
-                        }
+                        todos.Enqueue((nextPoint, WithPortal: false), currentLength + 1);
                     }
 
-                    if (current.ShallChangePortal2)
+                    if (canTeleportThroughWalls)
                     {
-                        if (newPortal.CorridorSegment != current.Portal1?.CorridorSegment)
+                        if (!IsCrossing(current.Point) && !IsCrossing(nextPoint))
                         {
-                            if (!visited.Contains((current.Point, current.Portal1, newPortal)))
-                            {
-                                todos.Enqueue((current.Point, current.Portal1, newPortal, current.ShallChangePortal2, false), currentLength + 1);
-                            }
+                            int effort = current.WithPortal ? 2 : 3;
+                            todos.Enqueue((nextPoint, WithPortal: true), currentLength + effort);
                         }
                     }
+                }
+                else 
+                {
+                    todos.Enqueue((nextPoint, WithPortal: false), currentLength + distance);
                 }
             }
         }
@@ -153,44 +123,23 @@ class Map
         return 0;
     }
 
-    private IEnumerable<Point> GetCorridorTeleportingTargets(Point point)
+    private IEnumerable<(Point Point, int Distance)> GetNodesInDirection(Point point, Point.Direction direction)
     {
-        List<Point> result = [];
+        List<(Point Point, int Distance)> result = [];
 
-        foreach (var direction in Point.AllDirections)
+        int distance = 0;
+
+        while (true)
         {
-            result.Add(GetWallSideSegmentInDirection(point, direction).CorridorSegment);
+            point = point.GetNeightboringPoint(direction);
+
+            if (IsAWall(point)) break;
+
+            distance++;
+            result.Add((point, distance));
         }
 
         return result;
-    }
-
-    private IEnumerable<Point> GetPossibleWallTeleportation(Point point, WallSideSegment? portalFrom, WallSideSegment? portalTo)
-    {
-        List<Point> result = [];
-
-            foreach (var direction in Point.AllDirections)
-            {
-                var neighbor = point.GetNeightboringPoint(direction);
-
-                if (neighbor == portalFrom?.WallSegment && portalTo != null) result.Add(portalTo.Value.CorridorSegment);
-            }
-
-        return result;
-    }
-
-    private WallSideSegment GetWallSideSegmentInDirection(Point point, Point.Direction direction)
-    {
-        Point endOfCorridor = point;
-        Point next = endOfCorridor;
-
-        while (!IsAWall(next))
-        {
-            endOfCorridor = next;
-            next = endOfCorridor.GetNeightboringPoint(direction);
-        }
-
-        return(WallSegment: next, CorridorSegment: endOfCorridor);
     }
 
     public enum Tile
@@ -205,12 +154,6 @@ class Map
 
 record class Point(int X, int Y)
 {
-    public Point[] GetAllNeightboringPoints()
-    {
-        var me = this;
-        return [.. AllDirections.Select(me.GetNeightboringPoint)];
-    }
-
     public Point GetNeightboringPoint(Direction direction)
     {
         return direction switch
@@ -234,5 +177,3 @@ record class Point(int X, int Y)
 
     public static readonly Direction[] AllDirections = [Direction.North, Direction.East, Direction.South, Direction.West];
 }
-
-// 842 too high
